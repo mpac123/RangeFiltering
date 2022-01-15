@@ -119,9 +119,12 @@ bool Trie::Iter::operator++(int) {
 }
 
 Trie::Iter Trie::moveToKeyGreaterThan(const std::string& key, const bool inclusive) {
-    // TODO: if not inclusive but the answer is exact, move to the next word
     Trie::Iter iter(this);
     moveDownTheNodeToKeyGreaterThan(key, 0, iter);
+    bool exact = iter.getKey() == key;
+    if (exact && !inclusive) {
+        iter++;
+    }
     return iter;
 }
 

@@ -70,6 +70,17 @@ public:
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fact", true, "far"));
         CHECK_FOR_FAILURES(doNotFindKeyGreaterThan(trie, "tries", true));
 
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "", false, "f"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fa", false, "far"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fast", false, "s"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fare", false, "fast"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "faster", false, "s"));
+        CHECK_FOR_FAILURES(doNotFindKeyGreaterThan(trie, "trie", false));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "tor", false, "toy"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "grr", false, "s"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fact", false, "far"));
+        CHECK_FOR_FAILURES(doNotFindKeyGreaterThan(trie, "tries", false));
+
         CHECK_FOR_FAILURES(findNext(trie, "f", "far"));
         CHECK_FOR_FAILURES(findNext(trie, "far", "fast"));
         CHECK_FOR_FAILURES(findNext(trie, "fast", "s"));

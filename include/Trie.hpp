@@ -17,12 +17,12 @@ public:
         bool end_of_word;
 
         TrieNode();
-        TrieNode(TrieNode* parent);
+        explicit TrieNode(TrieNode* parent);
     };
 
     class Iter {
     public:
-        Iter(const Trie *trie);
+        explicit Iter(const Trie *trie);
         void clear();
         bool isValid() const { return is_valid_; };
         int compare(const std::string& key) const;
