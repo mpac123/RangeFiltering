@@ -103,7 +103,19 @@ std::string Trie::Iter::getKey() const {
 }
 
 bool Trie::Iter::operator++(int) {
-    // TODO
+    // If node has children, find the left-most key
+    auto child_node_it = current_node_->children.begin();
+    if (child_node_it != current_node_->children.end()) {
+        key_len_++;
+        key_.push_back(child_node_it->first);
+        current_node_ = child_node_it->second;
+        findLeftMostKey();
+        return is_valid_;
+    }
+
+    // Otherwise, backtrack until parent node has children on right
+    findLeftMostKeyOfParentWithChildOnRight();
+    return is_valid_;
 }
 
 Trie::Iter Trie::moveToKeyGreaterThan(const std::string& key, const bool inclusive) {
@@ -115,7 +127,7 @@ Trie::Iter Trie::moveToKeyGreaterThan(const std::string& key, const bool inclusi
 
 void Trie::moveDownTheNodeToKeyGreaterThan(const std::string &key, uint64_t position, Trie::Iter& iter) {
     if (position >= key.size()) {
-        traverseDownLeftmostNodes(iter);
+        iter.findLeftMostKey();
         return;
     }
 
@@ -127,12 +139,12 @@ void Trie::moveDownTheNodeToKeyGreaterThan(const std::string &key, uint64_t posi
             iter.key_len_++;
             iter.key_.push_back(next_node_it->first);
             iter.current_node_ = next_node_it->second;
-            traverseDownLeftmostNodes(iter);
+            iter.findLeftMostKey();
             return;
         }
 
         // Otherwise, backtrack until node has child greater than the node visited before
-        backtrackToFindNextValue(iter);
+        iter.findLeftMostKeyOfParentWithChildOnRight();
         return;
     }
 
@@ -142,39 +154,39 @@ void Trie::moveDownTheNodeToKeyGreaterThan(const std::string &key, uint64_t posi
     moveDownTheNodeToKeyGreaterThan(key, position + 1, iter);
 }
 
-void Trie::traverseDownLeftmostNodes(Trie::Iter& iter) {
-    if (iter.current_node_->end_of_word) {
-        iter.is_valid_ = true;
+void Trie::Iter::findLeftMostKey() {
+    if (current_node_->end_of_word) {
+        is_valid_ = true;
         return;
     }
 
-    auto leftMostKeyIter = iter.current_node_->children.begin();
-    iter.key_len_++;
-    iter.key_.push_back(leftMostKeyIter->first);
-    iter.current_node_ = leftMostKeyIter->second;
-    traverseDownLeftmostNodes(iter);
+    auto leftMostKeyIter = current_node_->children.begin();
+    key_len_++;
+    key_.push_back(leftMostKeyIter->first);
+    current_node_ = leftMostKeyIter->second;
+    findLeftMostKey();
 }
 
-void Trie::backtrackToFindNextValue(Trie::Iter& iter) {
-    auto parent = iter.current_node_->parent;
+void Trie::Iter::findLeftMostKeyOfParentWithChildOnRight() {
+    auto parent = current_node_->parent;
     if (parent == nullptr) {
-        iter.is_valid_ = false;
+        is_valid_ = false;
         return;
     }
 
-    auto previous_key = iter.key_.at(iter.key_len_ - 1);
-    iter.key_.pop_back();
+    auto previous_key = key_.at(key_len_ - 1);
+    key_.pop_back();
     auto next_node_iter = parent->children.upper_bound(previous_key);
     if (next_node_iter == parent->children.end()) {
-        iter.key_len_--;
-        iter.current_node_ = parent;
-        backtrackToFindNextValue(iter);
+        key_len_--;
+        current_node_ = parent;
+        findLeftMostKeyOfParentWithChildOnRight();
         return;
     }
 
-    iter.key_.push_back(next_node_iter->first);
-    iter.current_node_ = next_node_iter->second;
-    traverseDownLeftmostNodes(iter);
+    key_.push_back(next_node_iter->first);
+    current_node_ = next_node_iter->second;
+    findLeftMostKey();
 }
 
 bool Trie::lookupRange(const std::string& left_key, const bool left_inclusive,

@@ -31,6 +31,9 @@ public:
         bool operator ++(int);
 
     private:
+        void findLeftMostKey();
+        void findLeftMostKeyOfParentWithChildOnRight();
+
         bool is_valid_;
         uint8_t key_len_;
         std::vector<char> key_;
@@ -54,9 +57,8 @@ private:
 
     void insert(TrieNode *node, uint64_t position, std::vector<std::string> &keys);
     bool lookupNode(std::string &key, uint64_t position, TrieNode *node, bool exact);
-    void traverseDownLeftmostNodes(Iter& iter);
+
     void moveDownTheNodeToKeyGreaterThan(const std::string &key, uint64_t position, Iter& iter);
-    void backtrackToFindNextValue(Iter& iter);
 };
 
 } // namespace range_filtering

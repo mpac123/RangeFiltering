@@ -16,6 +16,9 @@ namespace trie_test {
 class TrieUnitTest : public ::testing::Test {
 public:
     static void findKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive, const std::string& expected_key);
+    static void doNotFindKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive);
+    static void findNext(Trie& trie, const std::string& key, const std::string& expected_key);
+    static void doNotFindNext(Trie& trie, const std::string& key);
 };
 
     TEST_F(TrieUnitTest, emptyTrie) {
@@ -64,10 +67,16 @@ public:
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "trie", true, "trie"));
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "tor", true, "toy"));
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "grr", true, "s"));
+        CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fact", true, "far"));
+        CHECK_FOR_FAILURES(doNotFindKeyGreaterThan(trie, "tries", true));
 
-        auto found_key_iter = trie.moveToKeyGreaterThan("tries", true);
-        ASSERT_FALSE(found_key_iter.isValid());
-        ASSERT_EQ(found_key_iter.getKey(), "");
+        CHECK_FOR_FAILURES(findNext(trie, "f", "far"));
+        CHECK_FOR_FAILURES(findNext(trie, "far", "fast"));
+        CHECK_FOR_FAILURES(findNext(trie, "fast", "s"));
+        CHECK_FOR_FAILURES(findNext(trie, "s", "top"));
+        CHECK_FOR_FAILURES(findNext(trie, "top", "toy"));
+        CHECK_FOR_FAILURES(findNext(trie, "toy", "trie"));
+        CHECK_FOR_FAILURES(doNotFindNext(trie, "trie"));
 
     }
 
@@ -75,6 +84,26 @@ public:
         auto found_key_iter = trie.moveToKeyGreaterThan(key, inclusive);
         ASSERT_TRUE(found_key_iter.isValid());
         ASSERT_EQ(found_key_iter.getKey(), expected_key);
+    }
+
+    void TrieUnitTest::doNotFindKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive) {
+        auto found_key_iter = trie.moveToKeyGreaterThan(key, inclusive);
+        ASSERT_FALSE(found_key_iter.isValid());
+        ASSERT_EQ(found_key_iter.getKey(), "");
+    }
+
+    void TrieUnitTest::findNext(Trie& trie, const std::string& key, const std::string& expected_key) {
+        auto key_iter = trie.moveToKeyGreaterThan(key, true);
+        key_iter++;
+        ASSERT_TRUE(key_iter.isValid());
+        ASSERT_EQ(key_iter.getKey(), expected_key);
+    }
+
+    void TrieUnitTest::doNotFindNext(Trie& trie, const std::string& key) {
+        auto key_iter = trie.moveToKeyGreaterThan(key, true);
+        key_iter++;
+        ASSERT_FALSE(key_iter.isValid());
+        ASSERT_EQ(key_iter.getKey(), "");
     }
 }
 }
