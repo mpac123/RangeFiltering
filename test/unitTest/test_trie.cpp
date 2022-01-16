@@ -89,6 +89,14 @@ public:
         CHECK_FOR_FAILURES(findNext(trie, "toy", "trie"));
         CHECK_FOR_FAILURES(doNotFindNext(trie, "trie"));
 
+        ASSERT_TRUE(trie.lookupRange("fact", true, "fare", true));
+        ASSERT_FALSE(trie.lookupRange("fare", true, "fase", true));
+        ASSERT_TRUE(trie.lookupRange("far", true, "fase", true));
+        ASSERT_FALSE(trie.lookupRange("far", false, "fase", true));
+        ASSERT_TRUE(trie.lookupRange("fare", true, "fast", true));
+        ASSERT_FALSE(trie.lookupRange("fare", true, "fast", false));
+        ASSERT_FALSE(trie.lookupRange("fat", true, "o", false));
+        ASSERT_TRUE(trie.lookupRange("fat", true, "so", false));
     }
 
     void TrieUnitTest::findKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive, const std::string& expected_key) {
