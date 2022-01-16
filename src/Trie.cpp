@@ -209,5 +209,17 @@ bool Trie::lookupRange(const std::string& left_key, const bool left_inclusive,
     return false;
 }
 
+uint64_t Trie::TrieNode::getMemoryUsage() const {
+    uint64_t children_size = 0;
+    for (auto child : children) {
+        children_size += child.second->getMemoryUsage();
+    }
+    return sizeof(Trie::TrieNode) + children_size;
+}
+
+uint64_t Trie::getMemoryUsage() const {
+    return sizeof(Trie) + root->getMemoryUsage();
+}
+
 } // namespace range_filtering
 

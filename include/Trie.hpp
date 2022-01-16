@@ -18,6 +18,8 @@ public:
 
         TrieNode();
         explicit TrieNode(TrieNode* parent);
+
+        uint64_t getMemoryUsage() const;
     };
 
     class Iter {
@@ -51,6 +53,7 @@ public:
     Trie::Iter moveToKeyGreaterThan(const std::string& key, const bool inclusive);
     bool lookupRange(const std::string& left_key, const bool left_inclusive,
                      const std::string& right_key, const bool right_inclusive);
+    uint64_t getMemoryUsage() const;
 
 private:
     TrieNode *root;

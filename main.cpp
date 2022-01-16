@@ -17,17 +17,32 @@ int main() {
     Trie* trie = new Trie(keys);
 
     std::string key = "fase";
-    if (trie->lookup(key)) {
+    if (trie->lookupKey(key)) {
         std::cout << "Key found" << std::endl;
     } else {
         std::cout << "Key not found" << std::endl;
     }
 
     key = "toy";
-    if (trie->lookup(key)) {
+    if (trie->lookupKey(key)) {
         std::cout << "Key found" << std::endl;
     } else {
         std::cout << "Key not found" << std::endl;
     }
+
+    if (trie->lookupRange("fare", true, "fase", true)) {
+        std::cout << "Range contains keys" << std::endl;
+    } else {
+        std::cout << "Range empty" << std::endl;
+    }
+
+    if (trie->lookupRange("fare", true, "faster", true)) {
+        std::cout << "Range contains keys" << std::endl;
+    } else {
+        std::cout << "Range empty" << std::endl;
+    }
+
+    std::cout << "Memory usage: " << trie->getMemoryUsage() << std::endl;
+
     return 0;
 }
