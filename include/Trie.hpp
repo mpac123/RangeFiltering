@@ -46,6 +46,7 @@ public:
     };
 
 public:
+    // Currently, keys must be sorted
     explicit Trie(std::vector<std::string> &keys);
 
     bool lookupKey(std::string key);

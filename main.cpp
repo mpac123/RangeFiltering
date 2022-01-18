@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "include/Trie.hpp"
+#include "include/CompactTrie.hpp"
 
 using namespace range_filtering;
 
@@ -43,6 +44,23 @@ int main() {
     }
 
     std::cout << "Memory usage: " << trie->getMemoryUsage() << std::endl;
+
+    CompactTrie* compactTrie = new CompactTrie(keys);
+
+    key = "fase";
+    if (compactTrie->lookupPrefix(key)) {
+        std::cout << "Key found" << std::endl;
+    } else {
+        std::cout << "Key not found" << std::endl;
+    }
+
+    key = "toy";
+    if (compactTrie->lookupPrefix(key)) {
+        std::cout << "Key found" << std::endl;
+    } else {
+        std::cout << "Key not found" << std::endl;
+    }
+
 
     return 0;
 }

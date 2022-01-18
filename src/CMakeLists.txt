@@ -1,1 +1,1 @@
-add_library(TRIE SHARED Trie.cpp)
+add_library(TRIE SHARED Trie.cpp CompactTrie.cpp)

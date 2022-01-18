@@ -103,7 +103,7 @@ std::string Trie::Iter::getKey() const {
 }
 
 bool Trie::Iter::operator++(int) {
-    // If node has children, find the left-most key
+    // If node has children_, find the left-most key
     auto child_node_it = current_node_->children.begin();
     if (child_node_it != current_node_->children.end()) {
         key_len_++;
@@ -113,7 +113,7 @@ bool Trie::Iter::operator++(int) {
         return is_valid_;
     }
 
-    // Otherwise, backtrack until parent node has children on right
+    // Otherwise, backtrack until parent node has children_ on right
     findLeftMostKeyOfParentWithChildOnRight();
     return is_valid_;
 }
