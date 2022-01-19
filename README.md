@@ -8,10 +8,7 @@
     sudo cp *.a /usr/lib
 
 ## Build
-    mkdir build
-    cd build
-    cmake ..
-    make -j
+    ./build.sh
 
 ## Run Unit Tests
     make test
