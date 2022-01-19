@@ -3,8 +3,8 @@
 int main(int argc, char *argv[]) {
 
     // Load keys from file
-    std::string filename = "/home/mapac/Coding/RangeFiltering/bench/workloads/top-10000-english-words";
-    //std::string filename = "/home/mapac/Coding/RangeFiltering/bench/workloads/words.txt";
+    std::string filename = "bench/workloads/top-10000-english-words";
+    //std::string filename = "bench/workloads/words.txt";
     std::vector<std::string> keys;
     bench::loadKeysFromFile(filename, keys);
 
@@ -72,10 +72,7 @@ int main(int argc, char *argv[]) {
     double fp_rate_surf_real = false_positives_surf_real / (negatives + false_positives_surf_real + 0.0);
     double fp_rate_surf_mix = false_positives_surf_mixed / (negatives + false_positives_surf_mixed + 0.0);
 
-
-//    std::cout << "true positives compact trie = " << positives - false_positives << "\n";
-//    std::cout << "false positives = " << false_positives << "\n";
-//    std::cout << "true negatives = " << negatives << "\n";
+    
     std::cout << "FPR compact trie = " << fp_rate_compact_trie << std::endl;
     std::cout << "FPR base SuRF = " << fp_rate_surf_base << std::endl;
     std::cout << "FPR SuRFHash = " << fp_rate_surf_hash << std::endl;
