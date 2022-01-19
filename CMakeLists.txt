@@ -8,11 +8,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -Wall -Werror -mpopcnt -pthr
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-enable_testing()
+#enable_testing()
 
 add_subdirectory(src)
-add_subdirectory(test)
-
+#add_subdirectory(test)
+add_subdirectory(bench)
+add_subdirectory(external/SuRF)
 
 add_executable(main main.cpp)
 target_link_libraries(main TRIE)

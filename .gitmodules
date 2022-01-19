@@ -1,0 +1,3 @@
+[submodule "external/SuRF"]
+	path = external/SuRF
+	url = https://github.com/efficient/SuRF

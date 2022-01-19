@@ -138,9 +138,9 @@ namespace range_filtering {
         node->children_[current] = new_node;
     }
 
-    uint16_t CompactTrie::getKarpRabinFingerprint(std::string& pattern) {
+    uint8_t CompactTrie::getKarpRabinFingerprint(std::string& pattern) {
         uint64_t m = pattern.size();
-        const uint16_t q = 39293; // a prime number
+        const uint16_t q = 251; // a prime number
         const uint16_t d = 256; // number of characters in the input alphabet;
         uint16_t h = 1;
         uint16_t p = 0; // hash value for pattern

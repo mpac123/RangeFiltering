@@ -28,7 +28,7 @@ public:
         CompactNode(uint64_t fingerprint, uint64_t length);
         uint64_t getMemoryUsage() const override;
     private:
-        uint16_t fingerprint_;
+        uint8_t fingerprint_;
         uint64_t length_;
 
         bool lookupNode(std::string &key, uint64_t position) override;
@@ -37,9 +37,9 @@ public:
 public:
     // Currently, keys must be sorted
     explicit CompactTrie(std::vector<std::string> &keys);
-    
+
     bool lookupPrefix(std::string prefix);
-    static uint16_t getKarpRabinFingerprint(std::string& pattern);
+    static uint8_t getKarpRabinFingerprint(std::string& pattern);
     uint64_t getMemoryUsage() const;
 
 private:
