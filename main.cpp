@@ -61,6 +61,7 @@ int main() {
         std::cout << "Key not found" << std::endl;
     }
 
+    std::cout << "Memory usage: " << compactTrie->getMemoryUsage() << std::endl;
 
     return 0;
 }
