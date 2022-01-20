@@ -13,13 +13,18 @@ public:
     class TrieNode {
     public:
         TrieNode *parent;
-        std::map<char, TrieNode *> children;
+        std::vector<char> childrenKeys;
+        std::vector<TrieNode*> childrenNodes;
+
         bool end_of_word;
 
         TrieNode();
         explicit TrieNode(TrieNode* parent);
 
         uint64_t getMemoryUsage() const;
+        int64_t findKeyPosition(char key);
+        int64_t findKeyUpperBoundPosition(char key);
+        int64_t binarySearch(size_t left, size_t right, char key, bool exact);
     };
 
     class Iter {

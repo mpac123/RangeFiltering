@@ -13,6 +13,16 @@
 namespace range_filtering {
 namespace trie_test {
 
+static std::vector<std::string> keys = {
+        "f",
+        "far",
+        "fast",
+        "s",
+        "top",
+        "toy",
+        "trie",
+};
+
 class TrieUnitTest : public ::testing::Test {
 public:
     static void findKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive, const std::string& expected_key);
@@ -22,8 +32,8 @@ public:
 };
 
     TEST_F(TrieUnitTest, emptyTrie) {
-        auto keys = std::vector<std::string>();
-        auto trie = Trie(keys);
+        auto keys_empty = std::vector<std::string>();
+        auto trie = Trie(keys_empty);
 
         ASSERT_FALSE(trie.lookupPrefix("anything"));
         ASSERT_TRUE(trie.lookupPrefix(""));
@@ -31,16 +41,7 @@ public:
         ASSERT_FALSE(trie.lookupKey(""));
     }
 
-    TEST_F(TrieUnitTest, simpleTrie) {
-        std::vector<std::string> keys = {
-                "f",
-                "far",
-                "fast",
-                "s",
-                "top",
-                "toy",
-                "trie",
-        };
+    TEST_F(TrieUnitTest, simpleTrieLookupPrefix) {
         auto trie = Trie(keys);
 
         ASSERT_TRUE(trie.lookupPrefix("f"));
@@ -50,6 +51,10 @@ public:
         ASSERT_TRUE(trie.lookupPrefix("fast"));
         ASSERT_TRUE(trie.lookupPrefix("trie"));
         ASSERT_FALSE(trie.lookupPrefix("tried"));
+    }
+
+    TEST_F(TrieUnitTest, simpleTrieLookupKey) {
+        auto trie = Trie(keys);
 
         ASSERT_TRUE(trie.lookupKey("f"));
         ASSERT_FALSE(trie.lookupKey("fa"));
@@ -58,6 +63,10 @@ public:
         ASSERT_TRUE(trie.lookupKey("fast"));
         ASSERT_TRUE(trie.lookupKey("trie"));
         ASSERT_FALSE(trie.lookupKey("tried"));
+    }
+
+    TEST_F(TrieUnitTest, simpleTrieFindKeyGreaterThan) {
+        auto trie = Trie(keys);
 
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "", true, "f"));
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fa", true, "far"));
@@ -80,6 +89,10 @@ public:
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "grr", false, "s"));
         CHECK_FOR_FAILURES(findKeyGreaterThan(trie, "fact", false, "far"));
         CHECK_FOR_FAILURES(doNotFindKeyGreaterThan(trie, "tries", false));
+    }
+
+    TEST_F(TrieUnitTest, simpleTrieFindNext) {
+        auto trie = Trie(keys);
 
         CHECK_FOR_FAILURES(findNext(trie, "f", "far"));
         CHECK_FOR_FAILURES(findNext(trie, "far", "fast"));
@@ -88,6 +101,10 @@ public:
         CHECK_FOR_FAILURES(findNext(trie, "top", "toy"));
         CHECK_FOR_FAILURES(findNext(trie, "toy", "trie"));
         CHECK_FOR_FAILURES(doNotFindNext(trie, "trie"));
+    }
+
+    TEST_F(TrieUnitTest, simpleTrieLookupRange) {
+        auto trie = Trie(keys);
 
         ASSERT_TRUE(trie.lookupRange("fact", true, "fare", true));
         ASSERT_FALSE(trie.lookupRange("fare", true, "fase", true));
