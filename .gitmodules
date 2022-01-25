@@ -1,3 +1,6 @@
 [submodule "external/SuRF"]
 	path = external/SuRF
 	url = https://github.com/efficient/SuRF
+[submodule "external/BloomFilter"]
+	path = external/BloomFilter
+	url = https://github.com/mpac123/BloomFilter

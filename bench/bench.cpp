@@ -3,8 +3,8 @@
 int main(int argc, char *argv[]) {
 
     // Load keys from file
-    std::string filename = "bench/workloads/top-10000-english-words";
-    //std::string filename = "bench/workloads/words.txt";
+    //std::string filename = "bench/workloads/top-10000-english-words";
+    std::string filename = "bench/workloads/words.txt";
     std::vector<std::string> keys;
     bench::loadKeysFromFile(filename, keys);
 
@@ -15,6 +15,8 @@ int main(int argc, char *argv[]) {
     // Generate prefixes to query
     std::unordered_set<std::string> prefixes;
     bench::generatePrefixesToQuery(insert_keys, prefixes);
+
+    std::cout << "Number of generated prefixes to be queried = " << prefixes.size() << std::endl;
 
     // Build tries
     auto trie = new range_filtering::Trie(insert_keys);
