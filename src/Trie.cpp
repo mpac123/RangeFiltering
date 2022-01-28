@@ -14,7 +14,7 @@ Trie::TrieNode::TrieNode(TrieNode* _parent) {
     parent = _parent;
 }
 
-Trie::Trie(std::vector<std::string> &keys) {
+Trie::Trie(std::vector<std::string> &keys) : PrefixFilter() {
     root = new TrieNode();
     insert(root, 0, keys);
 }
@@ -64,11 +64,11 @@ bool Trie::lookupKey(std::string key) {
     return lookupNode(key, 0, root, true);
 }
 
-bool Trie::lookupPrefix(std::string prefix) {
+bool Trie::lookupPrefix(const std::string &prefix) {
     return lookupNode(prefix, 0, root, false);
 }
 
-bool Trie::lookupNode(std::string &key, uint64_t position, TrieNode *node, bool exact) {
+bool Trie::lookupNode(const std::string &key, uint64_t position, TrieNode *node, bool exact) {
     if (position >= key.size()) {
         return !exact || node->end_of_word;
     }

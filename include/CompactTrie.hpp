@@ -4,16 +4,18 @@
 #include <map>
 #include <vector>
 #include <KarpRabinFingerprint.h>
+#include <PrefixFilter.h>
 
 namespace range_filtering {
 
-class CompactTrie {
+class CompactTrie : public PrefixFilter {
 
 public:
     // Currently, keys must be sorted
     explicit CompactTrie(std::vector<std::string> &keys);
-    bool lookupPrefix(std::string prefix);
-    uint64_t getMemoryUsage() const;
+    bool lookupPrefix(const std::string &prefix) override;
+    uint64_t getMemoryUsage() const override;
+    std::string getName() const override { return "BlindTrie"; }
 
 protected:
     class TrieNode {
@@ -23,7 +25,7 @@ protected:
         std::map<char, TrieNode *> children_;
         bool end_of_word_;
 
-        virtual bool lookupNode(std::string &key, uint64_t position);
+        virtual bool lookupNode(const std::string &key, uint64_t position);
         void insertKeys(uint64_t position, std::vector<std::string> &keys);
         void insertChildNode(char current, uint64_t position, std::vector<std::string> &keys);
         virtual uint64_t getMemoryUsage() const;
@@ -40,7 +42,7 @@ protected:
         uint8_t fingerprint_;
         uint64_t length_;
 
-        bool lookupNode(std::string &key, uint64_t position) override;
+        bool lookupNode(const std::string &key, uint64_t position) override;
 
         friend class CompactTrie;
     };

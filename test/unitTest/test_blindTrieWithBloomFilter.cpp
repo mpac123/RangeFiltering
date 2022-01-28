@@ -10,7 +10,7 @@ class BlindTrieWithBloomFilterUnitTest : public ::testing::Test {
 
     TEST_F(BlindTrieWithBloomFilterUnitTest, emptyTrie) {
         auto keys = std::vector<std::string>();
-        auto trie = BlindTrieWithBloomFilter(keys);
+        auto trie = BlindTrieWithBloomFilter(keys, 8000);
 
         ASSERT_FALSE(trie.lookupPrefix("anything"));
         ASSERT_TRUE(trie.lookupPrefix(""));
@@ -26,7 +26,7 @@ class BlindTrieWithBloomFilterUnitTest : public ::testing::Test {
                 "toy",
                 "trie",
         };
-        auto trie = BlindTrieWithBloomFilter(keys);
+        auto trie = BlindTrieWithBloomFilter(keys, 8000);
 
         ASSERT_TRUE(trie.lookupPrefix("f"));
         ASSERT_TRUE(trie.lookupPrefix("fa"));
@@ -50,7 +50,7 @@ class BlindTrieWithBloomFilterUnitTest : public ::testing::Test {
                 "banana",
                 "bananas"
         };
-        auto trie = BlindTrieWithBloomFilter(keys);
+        auto trie = BlindTrieWithBloomFilter(keys, 8000);
 
         // true positives
         ASSERT_TRUE(trie.lookupPrefix("b"));

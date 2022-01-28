@@ -5,16 +5,18 @@
 #include <vector>
 #include <CompactTrie.hpp>
 #include <BloomFilter.h>
+#include <PrefixFilter.h>
 
 namespace range_filtering {
 
-class BlindTrieWithBloomFilter {
+class BlindTrieWithBloomFilter : public PrefixFilter {
 
 public:
     // Keys must be sorted
-    explicit BlindTrieWithBloomFilter(std::vector<std::string> &keys);
-    bool lookupPrefix(std::string prefix);
-    uint64_t getMemoryUsage() const;
+    explicit BlindTrieWithBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size);
+    bool lookupPrefix(const std::string &prefix) override;
+    uint64_t getMemoryUsage() const override;
+    std::string getName() const override { return "BloomTrie " + std::to_string(bloomFilter_->getSize()); }
 
 private:
     class Node {
@@ -24,7 +26,7 @@ private:
         std::map<char, Node *> children_;
         bool end_of_word_;
 
-        virtual bool lookupNode(std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter);
+        virtual bool lookupNode(const std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter);
         void insertKeys(uint64_t position, std::vector<std::string> &keys,
                         std::vector<std::string> &hashed_substrings);
         void insertChildNode(char current, uint64_t position,
@@ -45,7 +47,7 @@ private:
         uint8_t fingerprint_;
         uint64_t length_;
 
-        bool lookupNode(std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) override;
+        bool lookupNode(const std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) override;
 
         friend class BlindTrieWithBloomFilter;
     };

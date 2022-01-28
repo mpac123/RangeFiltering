@@ -12,6 +12,8 @@
 #include "Trie.hpp"
 #include "CompactTrie.hpp"
 #include "surf.hpp"
+#include "BlindTrieWithBloomFilter.h"
+#include "PrefixBloomFilter.h"
 
 namespace bench {
 
@@ -78,6 +80,46 @@ namespace bench {
         std::string right_key = prefix;
         right_key[prefix.length() - 1] = last_char + 1;
         return surf->lookupRange(prefix, true, right_key, false);
+    }
+
+    double calculateFPR(range_filtering::PrefixFilter *filter,
+                        range_filtering::Trie &trie,
+                        std::unordered_set<std::string> &prefixes) {
+        uint32_t negatives = 0;
+        uint32_t false_positives = 0;
+        uint32_t true_negatives = 0;
+        for (const auto& prefix : prefixes) {
+            bool foundInTrie = trie.lookupPrefix(prefix);
+            bool foundInFilter = filter->lookupPrefix(prefix);
+
+            negatives += (int) !foundInFilter;
+            false_positives += (int) (!foundInTrie && foundInFilter);
+            true_negatives += (int) (!foundInFilter && !foundInTrie);
+        }
+
+        assert(negatives == true_negatives);
+        double fp_rate = false_positives / (negatives + false_positives + 0.0);
+        return fp_rate;
+    }
+
+    double calculateFPR(surf::SuRF *surf,
+                        range_filtering::Trie &trie,
+                        std::unordered_set<std::string> &prefixes) {
+        uint32_t negatives = 0;
+        uint32_t false_positives = 0;
+        uint32_t true_negatives = 0;
+        for (const auto& prefix : prefixes) {
+            bool foundInTrie = trie.lookupPrefix(prefix);
+            bool foundInFilter = lookupPrefixInSuRF(surf, prefix);
+
+            negatives += (int) !foundInFilter;
+            false_positives += (int) (!foundInTrie && foundInFilter);
+            true_negatives += (int) (!foundInFilter && !foundInTrie);
+        }
+
+        assert(negatives == true_negatives);
+        double fp_rate = false_positives / (negatives + false_positives + 0.0);
+        return fp_rate;
     }
 }
 

@@ -28,11 +28,11 @@ namespace range_filtering {
         return children_size;
     }
 
-    BlindTrieWithBloomFilter::BlindTrieWithBloomFilter(std::vector<std::string> &keys) {
+    BlindTrieWithBloomFilter::BlindTrieWithBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size) {
         root_ = new Node();
         auto hashed_substrings = std::vector<std::string>();
         root_->insertKeys(0, keys, hashed_substrings);
-        bloomFilter_ = new bloom_filter::BloomFilter(hashed_substrings, 8000);
+        bloomFilter_ = new bloom_filter::BloomFilter(hashed_substrings, bloom_filter_size);
         hashed_substrings.clear();
     }
 
@@ -151,11 +151,11 @@ namespace range_filtering {
         }
     }
 
-    bool BlindTrieWithBloomFilter::lookupPrefix(std::string prefix) {
+    bool BlindTrieWithBloomFilter::lookupPrefix(const std::string &prefix) {
         return root_->lookupNode(prefix, 0, bloomFilter_);
     }
 
-    bool BlindTrieWithBloomFilter::Node::lookupNode(std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) {
+    bool BlindTrieWithBloomFilter::Node::lookupNode(const std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) {
         if (position >= key.size()) {
             return true;
         }
@@ -166,7 +166,7 @@ namespace range_filtering {
         return child_node_it->second->lookupNode(key, position + 1, bloomFilter);
     }
 
-    bool BlindTrieWithBloomFilter::BlindNode::lookupNode(std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) {
+    bool BlindTrieWithBloomFilter::BlindNode::lookupNode(const std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) {
         if (position == key.length()) {
             return true;
         }
@@ -194,7 +194,7 @@ namespace range_filtering {
     }
 
     uint64_t BlindTrieWithBloomFilter::getMemoryUsage() const {
-        return sizeof(BlindTrieWithBloomFilter) + root_->getMemoryUsage();
+        return sizeof(BlindTrieWithBloomFilter) + root_->getMemoryUsage() + bloomFilter_->getMemoryUsage();
     }
 
 }

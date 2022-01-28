@@ -138,11 +138,11 @@ namespace range_filtering {
         children_[current] = new_node;
     }
 
-    bool CompactTrie::lookupPrefix(std::string prefix) {
+    bool CompactTrie::lookupPrefix(const std::string &prefix) {
         return root->lookupNode(prefix, 0);
     }
 
-    bool CompactTrie::TrieNode::lookupNode(std::string &key, uint64_t position) {
+    bool CompactTrie::TrieNode::lookupNode(const std::string &key, uint64_t position) {
         if (position >= key.size()) {
             return true;
         }
@@ -153,7 +153,7 @@ namespace range_filtering {
         return child_node_it->second->lookupNode(key, position + 1);
     }
 
-    bool CompactTrie::CompactNode::lookupNode(std::string &key, uint64_t position) {
+    bool CompactTrie::CompactNode::lookupNode(const std::string &key, uint64_t position) {
         if (position == key.length()) {
             return true;
         }
