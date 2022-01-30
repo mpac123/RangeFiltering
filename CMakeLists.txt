@@ -16,8 +16,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/BloomFilter/include")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/BloomFilter/external/mmh")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/basic_filters/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/basic_filters/external/mmh")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/quotient-filter")
 
 enable_testing()
 
@@ -25,7 +26,9 @@ add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(bench)
 add_subdirectory(external/SuRF)
-add_subdirectory(external/BloomFilter)
+add_subdirectory(basic_filters)
+
+add_library(quotient_filter external/quotient-filter/qf.c)
 
 add_executable(main main.cpp)
 target_link_libraries(main TRIE)

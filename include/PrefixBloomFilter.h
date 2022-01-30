@@ -9,7 +9,6 @@ namespace range_filtering {
 class PrefixBloomFilter : public PrefixFilter {
 
 public:
-    // Keys must be sorted
     explicit PrefixBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size);
     bool lookupPrefix(const std::string& prefix) override;
     uint64_t getMemoryUsage() const override;
@@ -21,7 +20,6 @@ public:
 
 private:
     bloom_filter::BloomFilter *bloomFilter_;
-
     std::vector<std::string> generateAllPrefixes(std::vector<std::string> &keys);
 };
 }

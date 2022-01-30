@@ -4,3 +4,6 @@
 [submodule "external/BloomFilter"]
 	path = external/BloomFilter
 	url = https://github.com/mpac123/BloomFilter
+[submodule "external/quotient-filter"]
+	path = external/quotient-filter
+	url = https://github.com/vedantk/quotient-filter
