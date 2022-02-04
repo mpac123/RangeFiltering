@@ -11,14 +11,12 @@
     ./build.sh
 
 ## Run Unit Tests
-    make test
+    ./test.sh
 
 ## Benchmark
 
 ### Run benchmark
-```
     ./build/bench/bench
-```
 
 ### Workloads
 - Top 10000 English words come from [Google 10000 English Words repository](https://github.com/first20hours/google-10000-english)

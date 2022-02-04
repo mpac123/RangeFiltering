@@ -1,17 +1,26 @@
-#include <CompactTrie.hpp>
+#include <BlindTrieWithBloomFilter.h>
 
 namespace range_filtering {
 
-    CompactTrie::TrieNode::TrieNode() {
+    BlindTrieWithBloomFilter::Node::Node() {
         end_of_word_ = false;
-        children_ = std::map<char, TrieNode *>();
+        children_ = std::map<char, Node*>();
     }
 
-    uint64_t CompactTrie::TrieNode::getMemoryUsage() const {
-        return sizeof(CompactTrie::TrieNode) + getChildrenMemoryUsage();
+    BlindTrieWithBloomFilter::BlindNode::BlindNode(uint64_t fingerprint, uint64_t length) : Node() {
+        fingerprint_ = fingerprint;
+        length_ = length;
     }
 
-    uint64_t CompactTrie::TrieNode::getChildrenMemoryUsage() const {
+    uint64_t BlindTrieWithBloomFilter::Node::getMemoryUsage() const {
+        return sizeof(BlindTrieWithBloomFilter::Node) + getChildrenMemoryUsage();
+    }
+
+    uint64_t BlindTrieWithBloomFilter::BlindNode::getMemoryUsage() const {
+        return sizeof (BlindTrieWithBloomFilter::BlindNode) + getChildrenMemoryUsage();
+    }
+
+    uint64_t BlindTrieWithBloomFilter::Node::getChildrenMemoryUsage() const {
         uint64_t children_size = 0;
         for (auto child : children_) {
             children_size += child.second->getMemoryUsage();
@@ -19,21 +28,15 @@ namespace range_filtering {
         return children_size;
     }
 
-    uint64_t CompactTrie::CompactNode::getMemoryUsage() const {
-        return sizeof(CompactTrie::TrieNode) + getChildrenMemoryUsage();
+    BlindTrieWithBloomFilter::BlindTrieWithBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size) {
+        root_ = new Node();
+        auto hashed_substrings = std::vector<std::string>();
+        root_->insertKeys(0, keys, hashed_substrings);
+        bloomFilter_ = new bloom_filter::BloomFilter(hashed_substrings, bloom_filter_size);
+        hashed_substrings.clear();
     }
 
-    CompactTrie::CompactNode::CompactNode(uint64_t fingerprint, uint64_t length) : TrieNode() {
-        fingerprint_ = fingerprint;
-        length_ = length;
-    }
-
-    CompactTrie::CompactTrie(std::vector<std::string> &keys) {
-        root = new TrieNode();
-        root->insertKeys(0, keys);
-    }
-
-    void CompactTrie::TrieNode::insertKeys(uint64_t position, std::vector<std::string> &keys) {
+    void BlindTrieWithBloomFilter::Node::insertKeys(uint64_t position, std::vector<std::string> &keys, std::vector<std::string> &hashed_substrings) {
         if (keys.empty()) {
             return;
         }
@@ -46,7 +49,7 @@ namespace range_filtering {
             if (position >= key.size()) {
                 end_of_word_ = true;
                 // Create a new node and call insert recursively
-                insertChildNode(current, position, keys_with_common_prefix);
+                insertChildNode(current, position, keys_with_common_prefix, hashed_substrings);
                 // Reset current and clean keys_with_common_prefix
                 current = key.at(position);
                 keys_with_common_prefix = std::vector<std::string>();
@@ -60,7 +63,7 @@ namespace range_filtering {
                 keys_with_common_prefix.push_back(key);
             } else if (current != key.at(position)) {
                 // Create a new node and call insert recursively
-                insertChildNode(current, position, keys_with_common_prefix);
+                insertChildNode(current, position, keys_with_common_prefix, hashed_substrings);
                 // Reset current and clean keys_with_common_prefix
                 current = key.at(position);
                 keys_with_common_prefix = std::vector<std::string>();
@@ -72,21 +75,23 @@ namespace range_filtering {
         }
 
         if (current != '\0') {
-            insertChildNode(current, position, keys_with_common_prefix);
+            insertChildNode(current, position, keys_with_common_prefix, hashed_substrings);
         }
     }
 
-    void CompactTrie::TrieNode::insertChildNode(char current, uint64_t position,
-                                 std::vector<std::string> &keys) {
+    void BlindTrieWithBloomFilter::Node::insertChildNode(char current, uint64_t position,
+                                                         std::vector<std::string> &keys,
+                                                         std::vector<std::string> &hashed_substrings) {
         // If only one key provided, add a leaf
         if (keys.size() == 1) {
-            TrieNode *new_node;
+            Node *new_node;
             if (position + 1 == keys.at(0).size()) {
-                new_node = new TrieNode();
+                new_node = new Node();
                 end_of_word_ = true;
             } else {
                 auto substring = keys.at(0).substr(position);
-                new_node = new CompactNode(KarpRabinFingerprint::generate_8bit(substring), keys.at(0).size() - position);
+                new_node = new BlindNode(KarpRabinFingerprint::generate_8bit(substring), keys.at(0).size() - position);
+                generatePrefixes(keys.at(0), position, hashed_substrings);
                 end_of_word_ = true;
             }
             children_[current] = new_node;
@@ -126,23 +131,31 @@ namespace range_filtering {
         }
 
         // Create new node depending on the length of the LCP
-        TrieNode *new_node;
+        Node *new_node;
         if (substring.size() == 1) {
-            new_node = new TrieNode();
+            new_node = new Node();
             new_node->end_of_word_ = end_of_word;
         } else {
-            new_node = new CompactNode(KarpRabinFingerprint::generate_8bit(substring), substring.size());
+            new_node = new BlindNode(KarpRabinFingerprint::generate_8bit(substring), substring.size());
+            std::string prefix = keys.at(0).substr(0, position) + substring;
+            generatePrefixes(prefix, position, hashed_substrings);
             new_node->end_of_word_ = end_of_word;
         }
-        new_node->insertKeys(position + substring.size(), new_keys);
+        new_node->insertKeys(position + substring.size(), new_keys, hashed_substrings);
         children_[current] = new_node;
     }
 
-    bool CompactTrie::lookupPrefix(const std::string &prefix) {
-        return root->lookupNode(prefix, 0);
+    void BlindTrieWithBloomFilter::Node::generatePrefixes(std::string& word, uint64_t start_position, std::vector<std::string> &hashed_prefixes) {
+        for (size_t i = start_position + 1; i < word.size() - 1; i++) {
+            hashed_prefixes.push_back(word.substr(0, i + 1));
+        }
     }
 
-    bool CompactTrie::TrieNode::lookupNode(const std::string &key, uint64_t position) {
+    bool BlindTrieWithBloomFilter::lookupPrefix(const std::string &prefix) {
+        return root_->lookupNode(prefix, 0, bloomFilter_);
+    }
+
+    bool BlindTrieWithBloomFilter::Node::lookupNode(const std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) {
         if (position >= key.size()) {
             return true;
         }
@@ -150,19 +163,18 @@ namespace range_filtering {
         if (child_node_it == children_.end()) {
             return false;
         }
-        return child_node_it->second->lookupNode(key, position + 1);
+        return child_node_it->second->lookupNode(key, position + 1, bloomFilter);
     }
 
-    bool CompactTrie::CompactNode::lookupNode(const std::string &key, uint64_t position) {
+    bool BlindTrieWithBloomFilter::BlindNode::lookupNode(const std::string &key, uint64_t position, bloom_filter::BloomFilter* bloomFilter) {
         if (position == key.length()) {
             return true;
         }
 
         if (position + length_ - 1 > key.length()) {
             // The remaining part of key is shorter than the length_ of the substring corresponding to this node
-            // Hence, we have no way of checking if it's a valid prefix, so we have to return false
-            // (we can only allow false positives)
-            return true;
+            // We need to check the bloom filter:
+            return bloomFilter->lookupKey(key);
         }
 
         auto substring = key.substr(position - 1, length_);
@@ -175,13 +187,14 @@ namespace range_filtering {
             if (child_node_it == children_.end()) {
                 return false;
             }
-            return child_node_it->second->lookupNode(key, position + length_);
+            return child_node_it->second->lookupNode(key, position + length_, bloomFilter);
         }
 
         return false;
     }
 
-    uint64_t CompactTrie::getMemoryUsage() const {
-        return sizeof(CompactTrie) + root->getMemoryUsage();
+    uint64_t BlindTrieWithBloomFilter::getMemoryUsage() const {
+        return sizeof(BlindTrieWithBloomFilter) + root_->getMemoryUsage() + bloomFilter_->getMemoryUsage();
     }
+
 }

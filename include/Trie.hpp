@@ -5,9 +5,11 @@
 #include <iostream>
 #include <map>
 
+#include <PrefixFilter.h>
+
 namespace range_filtering {
 
-class Trie {
+class Trie : public PrefixFilter {
 
 public:
     class TrieNode {
@@ -50,17 +52,18 @@ public:
     explicit Trie(std::vector<std::string> &keys);
 
     bool lookupKey(std::string key);
-    bool lookupPrefix(std::string prefix);
+    bool lookupPrefix(const std::string &prefix) override;
     Trie::Iter moveToKeyGreaterThan(const std::string& key, const bool inclusive);
     bool lookupRange(const std::string& left_key, const bool left_inclusive,
                      const std::string& right_key, const bool right_inclusive);
-    uint64_t getMemoryUsage() const;
+    uint64_t getMemoryUsage() const override;
+    std::string getName() const override { return "Trie"; }
 
 private:
     TrieNode *root;
 
     void insert(TrieNode *node, uint64_t position, std::vector<std::string> &keys);
-    bool lookupNode(std::string &key, uint64_t position, TrieNode *node, bool exact);
+    bool lookupNode(const std::string &key, uint64_t position, TrieNode *node, bool exact);
 
     void moveDownTheNodeToKeyGreaterThan(const std::string &key, uint64_t position, Iter& iter);
 };
