@@ -40,12 +40,12 @@ namespace prefixBF_bench {
     };
 
     inline std::ostream & operator<<(std::ostream & strm, const PrefixBF_Stats &s) {
-        strm << s.arr_size << "\t" << s.memoryUsage << "\t" << s.FPR << "\t" << s.theoretical_FPR << "\t" << unsigned(s.hashesCnt);
+        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.theoretical_FPR << "\t\t\t\t";
         return strm;
     }
 
     inline std::ostream & operator<<(std::ostream & strm, const PrefixQF_Stats &s) {
-        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.falsePositiveProb << "\t" << s.q << "\t" << s.r;
+        strm << s.memoryUsage << "\t\t\t" << s.FPR << "\t" << s.falsePositiveProb << "\t\t";
         return strm;
     }
 
@@ -59,17 +59,18 @@ namespace prefixBF_bench {
         }
     }
 
-    void runTestsPQF(uint32_t start_q, int32_t end_q, int32_t start_r, int32_t end_r,
+    void runTestsPQF(uint32_t start_q, uint32_t end_q, uint32_t start_r, uint32_t end_r,
                      std::vector<std::string> insert_keys,
                      std::unordered_set<std::string> prefixes) {
         auto trie = range_filtering::Trie(insert_keys);
         for (uint32_t q = start_q; q <= end_q; q++) {
             for (uint32_t r = start_r; r <= end_r; r++) {
                 auto prefix_QF = new range_filtering::PrefixQuotientFilter(insert_keys, q, r);
-                std::cout << q << " " << r << std::endl;
                 if (!prefix_QF->hasFailed()) {
                     std::cout << PrefixQF_Stats(prefix_QF, bench::calculateFPR(prefix_QF, trie, prefixes), q, r)
                               << std::endl;
+                } else {
+                    std::cout << "failed" << std::endl;
                 }
             }
         }

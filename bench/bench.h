@@ -89,17 +89,12 @@ namespace bench {
         uint32_t false_positives = 0;
         uint32_t true_negatives = 0;
         for (const auto& prefix : prefixes) {
-            std::cout << prefix << std::endl;
             bool foundInTrie = trie.lookupPrefix(prefix);
             bool foundInFilter = filter->lookupPrefix(prefix);
 
             negatives += (int) !foundInFilter;
             false_positives += (int) (!foundInTrie && foundInFilter);
             true_negatives += (int) (!foundInFilter && !foundInTrie);
-
-            if (!foundInFilter && foundInTrie) {
-                std::cout << "FN " << prefix << std::endl;
-            }
         }
 
         assert(negatives == true_negatives);

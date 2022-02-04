@@ -1,9 +1,6 @@
 [submodule "external/SuRF"]
 	path = external/SuRF
 	url = https://github.com/efficient/SuRF
-[submodule "external/BloomFilter"]
-	path = external/BloomFilter
-	url = https://github.com/mpac123/BloomFilter
-[submodule "external/quotient-filter"]
-	path = external/quotient-filter
+[submodule "external/QF/quotient-filter"]
+	path = external/QF/quotient-filter
 	url = https://github.com/vedantk/quotient-filter

@@ -1,9 +1,15 @@
 #ifndef RANGE_FILTERING_PREFIXQUOTIENTFILTER_H
 #define RANGE_FILTERING_PREFIXQUOTIENTFILTER_H
 
-#include <QuotientFilter.h>
 #include <PrefixFilter.h>
 #include <unordered_set>
+#include <vector>
+#include "MurmurHash3.h"
+#include <cmath>
+#include <cassert>
+extern "C" {
+#include <qf.h>
+};
 
 namespace range_filtering {
 
@@ -19,16 +25,19 @@ public:
         return "PrefixQF q=" + std::to_string(q_) + " r = " + std::to_string(r_);
     }
 
-    double getFalsePositiveProbability() { return quotientFilter_->calculateFalsePositiveProbability(); }
-    bool hasFailed() { return quotientFilter_->hasFailed(); }
+    double getFalsePositiveProbability();
+    bool hasFailed() const { return failed_; }
 
 private:
     uint32_t q_;
     uint32_t r_;
+    uint64_t n_;
+    bool failed_;
 
-    quotient_filter::QuotientFilter *quotientFilter_;
+    struct quotient_filter quotientFilter_;
 
     std::vector<std::string> generateAllPrefixes(std::vector<std::string> &keys);
+    static uint64_t getFingerprint(const std::string &prefix);
 };
 
 } // namespace range_filtering

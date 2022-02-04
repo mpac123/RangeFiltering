@@ -17,21 +17,17 @@ int main(int argc, char *argv[]) {
     std::unordered_set<std::string> prefixes;
     bench::generatePrefixesToQuery(insert_keys, prefixes);
 
-    std::cout << "Number of generated prefixes to be queried = " << prefixes.size() << std::endl << std::endl;
-
-    std::cout << "arr_size\tmemoryUsage\tFPR\tBF_FPR\thashesCnt" << std::endl;
+    std::cout << "memoryUsage\tFPR Prefix-BF\tPF Prob BF\tFPR Prefix-QF\tFP Prob QF\tSuRF Base\tSuRF Real" << std::endl;
     //prefixBF_bench::runTests(1024, 7500000, 102400, insert_keys, prefixes);
-    //prefixBF_bench::runTestsPBF(1024, 390148, 10240, insert_keys, prefixes);
+    prefixBF_bench::runTestsPBF(1024, 780148, 10240, insert_keys, prefixes);
+    prefixBF_bench::runTestsPQF(16, 16, 3, 12, insert_keys, prefixes);
 
-    std::cout << std::endl;
-    prefixBF_bench::runTestsPQF(15, 15, 15, 16, insert_keys, prefixes);
-
-    auto surf_real = new surf::SuRF(insert_keys, surf::kReal, 0, 8);
     auto trie = range_filtering::Trie(insert_keys);
-    std::cout << std::endl << "SuRF Real memory = " << surf_real->getMemoryUsage() << std::endl;
-    std::cout << "FPR SuRF Real = " << bench::calculateFPR(surf_real, trie, prefixes) << std::endl;
-
     auto surf_base = new surf::SuRF(insert_keys, surf::kNone, 0, 0);
-    std::cout << std::endl << "SuRF Base memory = " << surf_base->getMemoryUsage() << std::endl;
-    std::cout << "FPR SuRF Base = " << bench::calculateFPR(surf_base, trie, prefixes) << std::endl;
+    std::cout << surf_base->getMemoryUsage() << "\t\t\t\t\t" << bench::calculateFPR(surf_base, trie, prefixes) << std::endl;
+
+    for (size_t i = 1; i <= 8; i++) {
+        auto surf_real = new surf::SuRF(insert_keys, surf::kReal, 0, i);
+        std::cout << surf_real->getMemoryUsage() << "\t\t\t\t\t\t" << bench::calculateFPR(surf_real, trie, prefixes) << std::endl;
+    }
 }

@@ -6,7 +6,14 @@ namespace range_filtering {
         q_ = q;
         r_ = r;
         auto prefixes = generateAllPrefixes(keys);
-        quotientFilter_ = new quotient_filter::QuotientFilter(prefixes, q, r);
+        n_ = prefixes.size();
+        qf_init(&quotientFilter_, q, r);
+        for (const auto& prefix : prefixes) {
+            if (!qf_insert(&quotientFilter_, getFingerprint(prefix))) {
+                failed_ = true;
+                return;
+            };
+        }
     }
 
     std::vector<std::string> PrefixQuotientFilter::generateAllPrefixes(std::vector<std::string> &keys) {
@@ -21,13 +28,27 @@ namespace range_filtering {
     }
 
     bool PrefixQuotientFilter::lookupPrefix(const std::string &prefix) {
+        assert(!failed_);
         if (prefix.empty()) {
             return true;
         }
-        return quotientFilter_->lookupKey(prefix);
+        return qf_may_contain(&quotientFilter_, getFingerprint(prefix));
     }
 
     uint64_t PrefixQuotientFilter::getMemoryUsage() const {
-        return quotientFilter_->getMemoryUsage();
+        assert(!failed_);
+        return qf_table_size(q_, r_);
+    }
+
+    double PrefixQuotientFilter::getFalsePositiveProbability() {
+        assert(!failed_);
+        // According to Bender et al.
+        return 1.0 - std::pow(1.0 - std::pow(2, - (int32_t) (q_+r_)), n_);
+    }
+
+    uint64_t PrefixQuotientFilter::getFingerprint(const std::string& prefix) {
+        uint64_t hash[2];
+        MurmurHash3_x64_128(prefix.c_str(), prefix.size(), 0, hash);
+        return hash[0];
     }
 }

@@ -24,7 +24,9 @@ class PrefixQuotientFilterUnitTest : public ::testing::Test {};
                 "toy",
                 "trie",
         };
-        auto trie = PrefixQuotientFilter(keys, 4, 5);
+        auto trie = PrefixQuotientFilter(keys, 4, 6);
+
+        ASSERT_FALSE(trie.hasFailed());
 
         ASSERT_TRUE(trie.lookupPrefix("f"));
         ASSERT_TRUE(trie.lookupPrefix("fa"));
@@ -49,6 +51,8 @@ class PrefixQuotientFilterUnitTest : public ::testing::Test {};
                 "bananas"
         };
         auto trie = PrefixQuotientFilter(keys, 5, 7);
+
+        ASSERT_FALSE(trie.hasFailed());
 
         // true positives
         ASSERT_TRUE(trie.lookupPrefix("b"));
