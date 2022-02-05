@@ -97,11 +97,11 @@ namespace range_filtering {
         std::string substring;
         substring.push_back(current);
 
-        for (size_t i = 1; i < keys.at(0).size(); i++) {
-            char ch = keys.at(0)[position + i];
+        for (size_t i = position + 1; i < keys.at(0).size(); i++) {
+            char ch = keys.at(0)[i];
             bool difference = false;
             for (size_t j = 1; j < keys.size(); j++) {
-                if (keys.at(j)[position + i] != ch) {
+                if (keys.at(j)[i] != ch) {
                     difference = true;
                     break;
                 }
@@ -119,7 +119,9 @@ namespace range_filtering {
         if (substring.size() + position == keys.at(0).size()) {
             end_of_word = true;
             for (size_t i = 1; i < keys.size(); i++) {
-                new_keys.push_back(keys[i]);
+                if (keys.at(i).size() != keys.at(0).size()) {
+                    new_keys.push_back(keys[i]);
+                }
             }
         } else {
             new_keys = keys;
