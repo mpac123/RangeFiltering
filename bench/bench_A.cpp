@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
     filters.push_back(new range_filtering::CompactTrie(insert_keys));
     filters.push_back(new range_filtering::PrefixBloomFilter(insert_keys, 134144));
     filters.push_back(new range_filtering::PrefixBloomFilter(insert_keys, 282504));
-    filters.push_back(new range_filtering::SuRFFacade(insert_keys, false));
-    filters.push_back(new range_filtering::SuRFFacade(insert_keys, true));
+    filters.push_back(new range_filtering::SuRFFacade(insert_keys, false, 8));
+    filters.push_back(new range_filtering::SuRFFacade(insert_keys, true, 0));
 
     // Print stats
     std::cout << "Structure\tMemory\tFPR" << std::endl;

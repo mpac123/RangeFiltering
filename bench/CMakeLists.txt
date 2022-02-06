@@ -1,9 +1,11 @@
 add_executable(bench bench.cpp)
 add_executable(prefixBF_bench prefixBF_bench.cpp)
 add_executable(bench_A bench_A.cpp)
+add_executable(prefix_filtering_bench prefix_filtering_bench.cpp)
 
 target_link_libraries(bench TRIE)
 target_link_libraries(prefixBF_bench TRIE)
 target_link_libraries(bench_A TRIE)
+target_link_libraries(prefix_filtering_bench TRIE)
 
 include_directories("../external/SuRF/include")

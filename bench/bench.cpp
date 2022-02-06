@@ -4,14 +4,15 @@ int main(int argc, char *argv[]) {
 
     // Load keys from file
     //std::string filename = "bench/workloads/top-10000-english-words";
-    std::string filename = "/home/mapac/Coding/RangeFiltering/bench/workloads/words.txt";
+    //std::string filename = "/home/mapac/Coding/RangeFiltering/bench/workloads/words.txt";
+    std::string filename = "/home/mapac/Coding/RangeFiltering/bench/workloads/txn_randint_zipfian";
     //std::string filename = "bench/workloads/words.txt";
     std::vector<std::string> keys;
     bench::loadKeysFromFile(filename, keys);
 
     // Generate insert keys
     std::vector<std::string> insert_keys;
-    bench::selectKeysToInsert(100, insert_keys, keys);
+    bench::selectKeysToInsert(1, insert_keys, keys);
 
     // Generate prefixes to query
     std::unordered_set<std::string> prefixes;

@@ -102,6 +102,26 @@ namespace bench {
         return fp_rate;
     }
 
+    double calculateFPR(range_filtering::PrefixFilter *filter,
+                        range_filtering::Trie &trie,
+                        std::vector<std::string> &prefixes) {
+        uint32_t negatives = 0;
+        uint32_t false_positives = 0;
+        uint32_t true_negatives = 0;
+        for (const auto& prefix : prefixes) {
+            bool foundInTrie = trie.lookupPrefix(prefix);
+            bool foundInFilter = filter->lookupPrefix(prefix);
+
+            negatives += (int) !foundInFilter;
+            false_positives += (int) (!foundInTrie && foundInFilter);
+            true_negatives += (int) (!foundInFilter && !foundInTrie);
+        }
+
+        assert(negatives == true_negatives);
+        double fp_rate = false_positives / (negatives + false_positives + 0.0);
+        return fp_rate;
+    }
+
     double calculateFPR(surf::SuRF *surf,
                         range_filtering::Trie &trie,
                         std::unordered_set<std::string> &prefixes) {

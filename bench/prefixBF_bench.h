@@ -6,6 +6,7 @@
 #include "PrefixBloomFilter.h"
 #include "PrefixQuotientFilter.h"
 #include "bench.h"
+#include "SuRFFacade.h"
 
 namespace prefixBF_bench {
 
@@ -40,18 +41,28 @@ namespace prefixBF_bench {
     };
 
     inline std::ostream & operator<<(std::ostream & strm, const PrefixBF_Stats &s) {
-        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.theoretical_FPR << "\t\t\t\t";
+        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.theoretical_FPR << "\t\t\t";
         return strm;
     }
 
     inline std::ostream & operator<<(std::ostream & strm, const PrefixQF_Stats &s) {
-        strm << s.memoryUsage << "\t\t\t" << s.FPR << "\t" << s.falsePositiveProb << "\t\t";
+        strm << s.memoryUsage << "\t\t\t" << s.FPR << "\t" << s.falsePositiveProb << "\t";
         return strm;
     }
 
     void runTestsPBF(uint32_t start_size, uint32_t end_size, uint32_t interval,
                                          std::vector<std::string> insert_keys,
                                          std::unordered_set<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint32_t s = start_size; s <= end_size; s += interval) {
+            auto prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s);
+            std::cout << PrefixBF_Stats(prefix_BF, bench::calculateFPR(prefix_BF, trie, prefixes)) << std::endl;
+        }
+    }
+
+    void runTestsPBF(uint32_t start_size, uint32_t end_size, uint32_t interval,
+                     std::vector<std::string> insert_keys,
+                     std::vector<std::string> prefixes) {
         auto trie = range_filtering::Trie(insert_keys);
         for (uint32_t s = start_size; s <= end_size; s += interval) {
             auto prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s);
@@ -73,6 +84,33 @@ namespace prefixBF_bench {
                     std::cout << "failed" << std::endl;
                 }
             }
+        }
+    }
+
+    void runTestsPQF(uint32_t start_q, uint32_t end_q, uint32_t start_r, uint32_t end_r,
+                     std::vector<std::string> insert_keys,
+                     std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint32_t q = start_q; q <= end_q; q++) {
+            for (uint32_t r = start_r; r <= end_r; r++) {
+                auto prefix_QF = new range_filtering::PrefixQuotientFilter(insert_keys, q, r);
+                if (!prefix_QF->hasFailed()) {
+                    std::cout << PrefixQF_Stats(prefix_QF, bench::calculateFPR(prefix_QF, trie, prefixes), q, r)
+                              << std::endl;
+                } else {
+                    std::cout << "failed" << std::endl;
+                }
+            }
+        }
+    }
+
+    void runTestsSuRFReal(uint32_t start_real_bit, uint32_t end_real_bit,
+                     std::vector<std::string> insert_keys,
+                     std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, i);
+            std::cout << surf_real->getMemoryUsage() << "\t\t\t\t\t" << bench::calculateFPR(surf_real, trie, prefixes) << std::endl;
         }
     }
 
