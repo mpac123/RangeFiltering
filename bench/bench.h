@@ -42,6 +42,8 @@ namespace bench {
             insert_keys.push_back(keys[i]);
 
         keys.clear();
+        std::unordered_set<std::string> s(insert_keys.begin(), insert_keys.end());
+        insert_keys.assign(s.begin(), s.end());
         sort(insert_keys.begin(), insert_keys.end());
     }
 

@@ -123,6 +123,18 @@ namespace range_filtering {
                     new_keys.push_back(keys[i]);
                 }
             }
+            if (new_keys.empty()) {
+                TrieNode *new_node;
+                if (position + 1 == keys.at(0).size()) {
+                    new_node = new TrieNode();
+                    end_of_word_ = true;
+                } else {
+                    new_node = new CompactNode(KarpRabinFingerprint::generate_8bit(substring), keys.at(0).size() - position);
+                    end_of_word_ = true;
+                }
+                children_[current] = new_node;
+                return;
+            }
         } else {
             new_keys = keys;
         }
