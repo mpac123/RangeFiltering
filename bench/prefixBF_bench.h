@@ -98,7 +98,7 @@ namespace prefixBF_bench {
                     std::cout << PrefixQF_Stats(prefix_QF, bench::calculateFPR(prefix_QF, trie, prefixes), q, r)
                               << std::endl;
                 } else {
-                    std::cout << "failed" << std::endl;
+                    // std::cout << "failed" << std::endl;
                 }
             }
         }

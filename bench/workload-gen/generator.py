@@ -10,12 +10,13 @@ import scipy.stats
 @click.option('--length-avg', type=int, help='The average length of the generated words', required=True)
 @click.option('--length-sigma', type=int, help='Standard deviation in lengths of the generated words', required=True)
 @click.option('--letter-distribution', 
-                type=click.Choice(["uniform", "normal", "zipfian"]), 
+                type=click.Choice(["uniform", "normal", "powerlaw"]), 
                 help='Distribution with which node`s child letters will be generated', 
                 required=True)
 @click.option('--normal_letter_distr_stddev',default=1, help='If letter-distribution=normal, set stddev to this value')
 @click.option('--output', help="Name of the output file")
-def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distribution, normal_letter_distr_stddev, output):
+@click.option('--output-dir', help="Name of the directory to save the output files")
+def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distribution, normal_letter_distr_stddev, output, output_dir):
     """Generate workload for filter and range filtering benchmarking"""
     # First, check if it is possible to generate n words with given alphabet size and averge word length
     if (pow(alph_size, length_avg) < n):
@@ -29,7 +30,7 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     norm = scipy.stats.norm(length_avg, length_sigma)
     
     alphabet = [chr((ord(alph_start) + i) % 256) for i in range(alph_size)]
-    choice_func = uniform_choice if letter_distribution == "uniform" else normal_choice
+    choice_func = uniform_choice if letter_distribution == "uniform" else powerlaw_choice if letter_distribution=="powerlaw" else normal_choice
 
     click.echo("Generating words")
     generate_node(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev)
@@ -52,14 +53,18 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     query_norm = scipy.stats.norm(int(length_avg / 2), int(length_sigma/2))
     generate_node(queries_random, n, alphabet, "", uniform_choice, query_norm, normal_letter_distr_stddev)
 
+    dir = "workloads"
+    if (output_dir is not None):
+        dir += "/" + output_dir
+
     click.echo("Saving results to file")
-    with open('workloads/%s_input.txt' % output, "w") as f:
+    with open('%s/%s_input.txt' % (dir, output), "w") as f:
         f.write("\n".join(words))
-    with open('workloads/%s_queries_random.txt' % output, "w") as f:
+    with open('%s/%s_queries_random.txt' % (dir, output), "w") as f:
         f.write("\n".join(queries_random))
-    with open('workloads/%s_queries_similar.txt' % output, "w") as f:
+    with open('%s/%s_queries_similar.txt' % (dir, output), "w") as f:
         f.write("\n".join(queries_similar))
-    with open('workloads/%s_queries_last_letter.txt' % output, "w") as f:
+    with open('%s/%s_queries_last_letter.txt' % (dir, output), "w") as f:
         f.write("\n".join(queries_last_letter_changed))
 
 def generate_node(words, n, alphabet, prefix, choice_func, norm, normal_letter_distr_stddev):
@@ -93,14 +98,24 @@ def normal_choice(lst, mean, stddev):
 def uniform_choice(lst, param1=None, param2=None):
     return lst[random.randint(0, len(lst))]
 
+def powerlaw_choice(lst, mean, stddev):
+    return lst[int(random.power(0.1) * len(lst) + 0.5) - 1]
+
 def generate_similar_queries(words, n, similar_queries, alphabet):
     queries = set()
-    while len(queries) < n:
-        word = random.choice(words)
+    for word in words:
         # Choose index to cull the prefix at (higher probability for bigger indices)
         rand1 = random.randint(1, len(word))
         rand2 = random.randint(1, len(word))
         ind = max(rand1, rand2)
+        new_word = word[:ind] + random.choice(alphabet)
+        cnt = 0
+        while new_word in queries and cnt < 10:
+            rand1 = random.randint(1, len(word))
+            rand2 = random.randint(1, len(word))
+            ind = max(rand1, rand2)
+            new_word = word[:ind] + random.choice(alphabet)
+            cnt += 1
         queries.add(word[:ind] + random.choice(alphabet))
     similar_queries.extend(list(queries))
 

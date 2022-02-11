@@ -1,0 +1,235 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{crimson2143940}{RGB}{214,39,40}
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{darkorange25512714}{RGB}{255,127,14}
+\definecolor{forestgreen4416044}{RGB}{44,160,44}
+\definecolor{lightgray204}{RGB}{204,204,204}
+\definecolor{mediumpurple148103189}{RGB}{148,103,189}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+legend cell align={left},
+legend style={fill opacity=0.8, draw opacity=1, text opacity=1, draw=lightgray204},
+tick align=outside,
+tick pos=left,
+title={Prefix filtering: uniform dataset, last\_letter queries},
+unbounded coords=jump,
+x grid style={darkgray176},
+xlabel={Memory usage [bytes]},
+xmin=-7.45000000000002, xmax=2950.45,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel={FPR},
+ymin=-0.04895835, ymax=1.02812535,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180, mark=x, mark size=3, mark options={solid}]
+table {%
+127 0.791667
+252 0.53125
+377 0.322917
+502 0.135417
+627 0.145833
+752 0.104167
+877 0.0520833
+1002 0
+1127 0.03125
+1252 0
+1377 0
+1502 0.0104167
+1627 0.0208333
+1752 0
+1877 0
+2002 0
+2127 0
+2252 0
+2377 0
+2502 0
+1024 nan
+1280 nan
+1536 nan
+1792 nan
+2048 nan
+2304 nan
+2560 nan
+2816 nan
+901 nan
+925 nan
+941 nan
+949 nan
+965 nan
+973 nan
+989 nan
+997 nan
+1013 nan
+};
+\addlegendentry{FPR Prefix-BF}
+\addplot [semithick, darkorange25512714, mark=x, mark size=3, mark options={solid}]
+table {%
+127 0.746401
+252 0.496414
+377 0.35922
+502 0.246426
+627 0.176535
+752 0.122329
+877 0.0872078
+1002 0.060726
+1127 0.0431668
+1252 0.0301452
+1377 0.021388
+1502 0.0149645
+1627 0.0106031
+1752 0.00742858
+1877 0.00525824
+2002 0.00368765
+2127 0.00260824
+2252 0.0018306
+2377 0.00129397
+2502 0.000908734
+1024 nan
+1280 nan
+1536 nan
+1792 nan
+2048 nan
+2304 nan
+2560 nan
+2816 nan
+901 nan
+925 nan
+941 nan
+949 nan
+965 nan
+973 nan
+989 nan
+997 nan
+1013 nan
+};
+\addlegendentry{PF Prob BF}
+\addplot [semithick, forestgreen4416044, mark=x, mark size=3, mark options={solid}]
+table {%
+127 nan
+252 nan
+377 nan
+502 nan
+627 nan
+752 nan
+877 nan
+1002 nan
+1127 nan
+1252 nan
+1377 nan
+1502 nan
+1627 nan
+1752 nan
+1877 nan
+2002 nan
+2127 nan
+2252 nan
+2377 nan
+2502 nan
+1024 0.21875
+1280 0.114583
+1536 0.0833333
+1792 0.03125
+2048 0.03125
+2304 0.0104167
+2560 0.0104167
+2816 0
+901 nan
+925 nan
+941 nan
+949 nan
+965 nan
+973 nan
+989 nan
+997 nan
+1013 nan
+};
+\addlegendentry{FPR Prefix-QF}
+\addplot [semithick, crimson2143940, mark=x, mark size=3, mark options={solid}]
+table {%
+127 nan
+252 nan
+377 nan
+502 nan
+627 nan
+752 nan
+877 nan
+1002 nan
+1127 nan
+1252 nan
+1377 nan
+1502 nan
+1627 nan
+1752 nan
+1877 nan
+2002 nan
+2127 nan
+2252 nan
+2377 nan
+2502 nan
+1024 0.270018
+1280 0.145602
+1536 0.0756613
+1792 0.0385741
+2048 0.0194766
+2304 0.00978613
+2560 0.00490508
+2816 0.00245555
+901 nan
+925 nan
+941 nan
+949 nan
+965 nan
+973 nan
+989 nan
+997 nan
+1013 nan
+};
+\addlegendentry{FP Prob QF}
+\addplot [semithick, mediumpurple148103189, mark=x, mark size=3, mark options={solid}]
+table {%
+127 nan
+252 nan
+377 nan
+502 nan
+627 nan
+752 nan
+877 nan
+1002 nan
+1127 nan
+1252 nan
+1377 nan
+1502 nan
+1627 nan
+1752 nan
+1877 nan
+2002 nan
+2127 nan
+2252 nan
+2377 nan
+2502 nan
+1024 nan
+1280 nan
+1536 nan
+1792 nan
+2048 nan
+2304 nan
+2560 nan
+2816 nan
+901 0.979167
+925 0.979167
+941 0.979167
+949 0.979167
+965 0.96875
+973 0.958333
+989 0.947917
+997 0.947917
+1013 0.947917
+};
+\addlegendentry{SuRF Real}
+\end{axis}
+
+\end{tikzpicture}
