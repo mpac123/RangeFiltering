@@ -1,6 +1,3 @@
 [submodule "external/SuRF"]
 	path = external/SuRF
 	url = https://github.com/efficient/SuRF
-[submodule "external/QF/quotient-filter"]
-	path = external/QF/quotient-filter
-	url = https://github.com/vedantk/quotient-filter
