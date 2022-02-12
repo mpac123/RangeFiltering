@@ -37,12 +37,12 @@ int main(int argc, char *argv[]) {
     std::cout << "memoryUsage\tFPR Prefix-BF\tPF Prob BF\tFPR Prefix-QF\tFP Prob QF\tSuRF Real" << std::endl;
 
     // Run PrefixBF
-    prefixBF_bench::runTestsPBF(std::get<0>(prefixBF_params), std::get<1>(prefixBF_params), std::get<2>(prefixBF_params), keys, prefixes);
+    //prefixBF_bench::runTestsPBF(std::get<0>(prefixBF_params), std::get<1>(prefixBF_params), std::get<2>(prefixBF_params), keys, prefixes);
 
     // Run PrefixQF
-    prefixBF_bench::runTestsPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params),
-            std::get<2>(prefixQF_params), std::get<3>(prefixQF_params), keys, prefixes);
+    //prefixBF_bench::runTestsPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params),
+    //        std::get<2>(prefixQF_params), std::get<3>(prefixQF_params), keys, prefixes);
 
     // Run SuRF Real
-    prefixBF_bench::runTestsSuRFReal(0, 8, keys, prefixes);
+    //prefixBF_bench::runTestsSuRFReal(0, 8, keys, prefixes);
 }

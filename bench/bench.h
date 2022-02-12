@@ -14,6 +14,8 @@
 #include "surf.hpp"
 #include "BlindTrieWithBloomFilter.h"
 #include "PrefixBloomFilter.h"
+#include <chrono>
+#include <ctime>
 
 namespace bench {
 
@@ -102,24 +104,30 @@ namespace bench {
         return fp_rate;
     }
 
-    double calculateFPR(range_filtering::PrefixFilter *filter,
+    std::tuple<double, double> calculateFPR(range_filtering::PrefixFilter *filter,
                         range_filtering::Trie &trie,
                         std::vector<std::string> &prefixes) {
         uint32_t negatives = 0;
         uint32_t false_positives = 0;
         uint32_t true_negatives = 0;
+        double total_query_time = 0.;
         for (const auto& prefix : prefixes) {
             bool foundInTrie = trie.lookupPrefix(prefix);
+            auto start = std::chrono::system_clock::now();
             bool foundInFilter = filter->lookupPrefix(prefix);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
 
             negatives += (int) !foundInFilter;
             false_positives += (int) (!foundInTrie && foundInFilter);
             true_negatives += (int) (!foundInFilter && !foundInTrie);
+            total_query_time += elapsed_seconds.count();
         }
 
         assert(negatives == true_negatives);
         double fp_rate = false_positives / (negatives + false_positives + 0.0);
-        return fp_rate;
+        double average_query_time = total_query_time / prefixes.size();
+        return std::make_tuple(fp_rate, average_query_time);
     }
 
     double calculateFPR(surf::SuRF *surf,
