@@ -6,73 +6,109 @@
 #include "PrefixBloomFilter.h"
 #include "PrefixQuotientFilter.h"
 #include "bench.h"
+#include "SuRFFacade.h"
 
 namespace prefixBF_bench {
 
     struct PrefixBF_Stats {
-        PrefixBF_Stats(range_filtering::PrefixBloomFilter *prefixBF, double FPR_) {
+        PrefixBF_Stats(range_filtering::PrefixBloomFilter *prefixBF, double FPR_, double creationTime_, double queryTime_) {
             arr_size = prefixBF->getBFSize();
             theoretical_FPR = prefixBF->getFPR();
             hashesCnt = prefixBF->getNumberOfHashes();
             FPR = FPR_;
             memoryUsage = prefixBF->getMemoryUsage();
+            creationTime = creationTime_;
+            queryTime = queryTime_;
         }
         uint32_t arr_size;
         double theoretical_FPR;
         uint8_t hashesCnt;
         double FPR;
         uint64_t memoryUsage;
+        double creationTime;
+        double queryTime;
     };
 
+    inline std::ostream & operator<<(std::ostream & strm, const PrefixBF_Stats &s) {
+        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.theoretical_FPR << "\t"
+             << s.arr_size << "\t" << unsigned(s.hashesCnt) << "\t" << s.creationTime << "\t" << s.queryTime;
+        return strm;
+    }
+
     struct PrefixQF_Stats {
-        PrefixQF_Stats(range_filtering::PrefixQuotientFilter *prefixQF, double FPR_, uint32_t q_, uint32_t r_) {
+        PrefixQF_Stats(range_filtering::PrefixQuotientFilter *prefixQF, double FPR_, uint32_t r_, double creationTime_, double queryTime_) {
             falsePositiveProb = prefixQF->getFalsePositiveProbability();
             FPR = FPR_;
             memoryUsage = prefixQF->getMemoryUsage();
-            q = q_;
+            q = prefixQF->getQ();
             r = r_;
+            creationTime = creationTime_;
+            queryTime = queryTime_;
         }
         double falsePositiveProb;
         double FPR;
         uint64_t memoryUsage;
         uint32_t q;
         uint32_t r;
+        double creationTime;
+        double queryTime;
     };
 
-    inline std::ostream & operator<<(std::ostream & strm, const PrefixBF_Stats &s) {
-        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.theoretical_FPR << "\t\t\t\t";
-        return strm;
-    }
-
     inline std::ostream & operator<<(std::ostream & strm, const PrefixQF_Stats &s) {
-        strm << s.memoryUsage << "\t\t\t" << s.FPR << "\t" << s.falsePositiveProb << "\t\t";
+        strm << s.memoryUsage << "\t" << s.FPR << "\t" << s.falsePositiveProb << "\t"
+             << s.q << "\t" << s.r << "\t" << s.creationTime << "\t" << s.queryTime;
         return strm;
     }
 
     void runTestsPBF(uint32_t start_size, uint32_t end_size, uint32_t interval,
-                                         std::vector<std::string> insert_keys,
-                                         std::unordered_set<std::string> prefixes) {
+                     std::vector<std::string> insert_keys,
+                     std::vector<std::string> prefixes,
+                     uint64_t max_doubting_level) {
         auto trie = range_filtering::Trie(insert_keys);
         for (uint32_t s = start_size; s <= end_size; s += interval) {
-            auto prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s);
-            std::cout << PrefixBF_Stats(prefix_BF, bench::calculateFPR(prefix_BF, trie, prefixes)) << std::endl;
+            auto start = std::chrono::system_clock::now();
+            auto prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s, max_doubting_level);
+            auto end = std::chrono::system_clock::now();
+
+            std::chrono::duration<double> elapsed_seconds = end-start;
+            auto [fpr, query_time] = bench::calculateFPR(prefix_BF, trie, prefixes);
+            std::cout << PrefixBF_Stats(prefix_BF, fpr, elapsed_seconds.count(), query_time) << std::endl;
         }
     }
 
-    void runTestsPQF(uint32_t start_q, uint32_t end_q, uint32_t start_r, uint32_t end_r,
+    void runTestsPQF(uint32_t start_r, uint32_t end_r,
                      std::vector<std::string> insert_keys,
-                     std::unordered_set<std::string> prefixes) {
+                     std::vector<std::string> prefixes,
+                     uint64_t max_doubting_level) {
         auto trie = range_filtering::Trie(insert_keys);
-        for (uint32_t q = start_q; q <= end_q; q++) {
-            for (uint32_t r = start_r; r <= end_r; r++) {
-                auto prefix_QF = new range_filtering::PrefixQuotientFilter(insert_keys, q, r);
-                if (!prefix_QF->hasFailed()) {
-                    std::cout << PrefixQF_Stats(prefix_QF, bench::calculateFPR(prefix_QF, trie, prefixes), q, r)
-                              << std::endl;
-                } else {
-                    std::cout << "failed" << std::endl;
-                }
+        for (uint32_t r = start_r; r <= end_r; r++) {
+            auto start = std::chrono::system_clock::now();
+            auto prefix_QF = new range_filtering::PrefixQuotientFilter(insert_keys, r, max_doubting_level);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
+
+            if (!prefix_QF->hasFailed()) {
+                auto [fpr, query_time] = bench::calculateFPR(prefix_QF, trie, prefixes);
+                std::cout << PrefixQF_Stats(prefix_QF, fpr, r, elapsed_seconds.count(), query_time)
+                          << std::endl;
+            } else {
+                // std::cout << "failed" << std::endl;
             }
+        }
+    }
+
+    void runTestsSuRFReal(uint32_t start_real_bit, uint32_t end_real_bit,
+                     std::vector<std::string> insert_keys,
+                     std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            auto start = std::chrono::system_clock::now();
+            auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, i);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
+            auto [fpr, query_time] = bench::calculateFPR(surf_real, trie, prefixes);
+            std::cout << surf_real->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << std::endl;
         }
     }
 
