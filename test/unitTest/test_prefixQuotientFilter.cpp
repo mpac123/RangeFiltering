@@ -8,7 +8,7 @@ class PrefixQuotientFilterUnitTest : public ::testing::Test {};
 
     TEST_F(PrefixQuotientFilterUnitTest, emptyTrie) {
         auto keys = std::vector<std::string>();
-        auto trie = PrefixQuotientFilter(keys, 3, 5);
+        auto trie = PrefixQuotientFilter(keys, 5);
 
         ASSERT_FALSE(trie.lookupPrefix("anything"));
         ASSERT_TRUE(trie.lookupPrefix(""));
@@ -24,7 +24,7 @@ class PrefixQuotientFilterUnitTest : public ::testing::Test {};
                 "toy",
                 "trie",
         };
-        auto trie = PrefixQuotientFilter(keys, 4, 6);
+        auto trie = PrefixQuotientFilter(keys, 6);
 
         ASSERT_FALSE(trie.hasFailed());
 
@@ -48,9 +48,10 @@ class PrefixQuotientFilterUnitTest : public ::testing::Test {};
                 "baba",
                 "babca",
                 "banana",
-                "bananas"
+                "bananas",
+                "bananass"
         };
-        auto trie = PrefixQuotientFilter(keys, 5, 7);
+        auto trie = PrefixQuotientFilter(keys, 5);
 
         ASSERT_FALSE(trie.hasFailed());
 

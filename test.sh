@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd build
-make test
+make CTEST_OUTPUT_ON_FAILURE=1 test
 cd ..

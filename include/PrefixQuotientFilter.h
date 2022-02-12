@@ -15,7 +15,7 @@ namespace range_filtering {
 
 class PrefixQuotientFilter : public PrefixFilter {
 public:
-    explicit PrefixQuotientFilter(std::vector<std::string> &keys, uint32_t q, uint32_t r);
+    explicit PrefixQuotientFilter(std::vector<std::string> &keys, uint32_t r, uint64_t max_doubting_level = 0);
 
     bool lookupPrefix(const std::string &prefix) override;
 
@@ -27,12 +27,14 @@ public:
 
     double getFalsePositiveProbability();
     bool hasFailed() const { return failed_; }
+    uint32_t getQ() const { return q_; }
 
 private:
     uint32_t q_;
     uint32_t r_;
     uint64_t n_;
     bool failed_;
+    uint64_t maxDoubtingLevel_;
 
     struct quotient_filter quotientFilter_;
 
