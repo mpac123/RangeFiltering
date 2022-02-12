@@ -2,12 +2,19 @@
 
 namespace range_filtering {
 
-    PrefixQuotientFilter::PrefixQuotientFilter(std::vector<std::string> &keys, uint32_t q, uint32_t r) {
-        q_ = q;
+    PrefixQuotientFilter::PrefixQuotientFilter(std::vector<std::string> &keys, uint32_t r, uint64_t max_doubting_level) {
         r_ = r;
+        maxDoubtingLevel_ = max_doubting_level;
         auto prefixes = generateAllPrefixes(keys);
+
+        if (prefixes.empty()) q_ = 2; else {
+            auto q = int(std::ceil(std::log2(prefixes.size())));
+            auto alpha = prefixes.size() / (double(2 << (q - 1)));
+            if (alpha < 0.6) q_ = q; else q_ = q + 1;
+        }
+
         n_ = prefixes.size();
-        qf_init(&quotientFilter_, q, r);
+        qf_init(&quotientFilter_, q_, r);
         for (const auto& prefix : prefixes) {
             if (!qf_insert(&quotientFilter_, getFingerprint(prefix))) {
                 failed_ = true;
@@ -32,7 +39,15 @@ namespace range_filtering {
         if (prefix.empty()) {
             return true;
         }
-        return qf_may_contain(&quotientFilter_, getFingerprint(prefix));
+        auto may_exist = qf_may_contain(&quotientFilter_, getFingerprint(prefix));
+        if (!may_exist) return false;
+        std::string query = prefix.substr(0, prefix.length() - 1);
+        for (size_t i = 0; i < maxDoubtingLevel_; i++) {
+            if (query.length() == 0) return true;
+            may_exist = qf_may_contain(&quotientFilter_, getFingerprint(query));
+            if (!may_exist) return false;
+        }
+        return true;
     }
 
     uint64_t PrefixQuotientFilter::getMemoryUsage() const {
