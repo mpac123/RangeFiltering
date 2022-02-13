@@ -46,6 +46,7 @@ namespace range_filtering {
             if (query.length() == 0) return true;
             may_exist = qf_may_contain(&quotientFilter_, getFingerprint(query));
             if (!may_exist) return false;
+            query = prefix.substr(0, query.length() - 1);
         }
         return true;
     }

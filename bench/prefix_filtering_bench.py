@@ -54,7 +54,7 @@ if dir=="1mln":
     QF_end_r=4
 
 if dir=="100k" and test_id=="prefix_filtering_no_surf":
-    BF_min=10000000
+    BF_min=5000000
     BF_max=25000000
     BF_interval=1000000
     QF_start_r=2
@@ -66,10 +66,18 @@ def run_prefix_fitlering_test_without_surf():
     df_prefixQF = run_prefixQF_bench(dist, qt, workload_dir, QF_start_q, QF_end_q, QF_start_r, QF_end_r, 0)
     df_prefixQF_doubting = run_prefixQF_bench(dist, qt, workload_dir, QF_start_q, QF_end_q, QF_start_r, QF_end_r, 3)
 
-    df_prefixBF_doubting.rename(columns={'FPR Prefix-BF': 'FPR Prefix-BF+Doubting'}, inplace=True)
-    df_prefixQF_doubting.rename(columns={'FPR Prefix-QF': 'FPR Prefix-QF+Doubting'}, inplace=True)
+    df_prefixBF.rename(columns={'Creation time': 'Prefix-BF Creation time',
+                                'Query time': 'Prefix-BF Query time'}, inplace=True)
+    df_prefixBF_doubting.rename(columns={'FPR Prefix-BF': 'FPR Prefix-BF+Doubting',
+                                         'Creation time': 'Prefix-BF+Doubting Creation time',
+                                         'Query time': 'Prefix-BF+Doubting Query time'}, inplace=True)
+    df_prefixQF.rename(columns={'Creation time': 'Prefix-QF Creation time',
+                                'Query time': 'Prefix-QF Query time'}, inplace=True)
+    df_prefixQF_doubting.rename(columns={'FPR Prefix-QF': 'FPR Prefix-QF+Doubting',
+                                         'Creation time': 'Prefix-QF+Doubting Creation time',
+                                         'Query time': 'Prefix-QF+Doubting Query time'}, inplace=True)
 
-    print("Creating DF with stats")
+    print("Creating DF with memory/FPR stats")
     dataframes = [df_prefixBF[['Memory usage', 'FPR Prefix-BF']], 
                     df_prefixBF_doubting[['Memory usage', 'FPR Prefix-BF+Doubting']], 
                     df_prefixQF[['Memory usage', 'FPR Prefix-QF']], 
@@ -77,6 +85,25 @@ def run_prefix_fitlering_test_without_surf():
     df = reduce(lambda left,right: pd.merge(left, right, how='outer', on='Memory usage'), dataframes)
 
     with open(results_dir + "/" + dist + "_" + qt + ".txt", "w") as f:
+        df.to_csv(f)
+
+    print("Creating DF with memory/time stats")
+    dataframes = [df_prefixBF[['Memory usage', 'Prefix-BF Creation time']], 
+                    df_prefixBF_doubting[['Memory usage', 'Prefix-BF+Doubting Creation time']], 
+                    df_prefixQF[['Memory usage', 'Prefix-QF Creation time']], 
+                    df_prefixQF_doubting[['Memory usage', 'Prefix-QF+Doubting Creation time']]]
+    df = reduce(lambda left,right: pd.merge(left, right, how='outer', on='Memory usage'), dataframes)
+
+    with open(results_dir + "/" + dist + "_" + qt + "_creation.txt", "w") as f:
+        df.to_csv(f)
+
+    dataframes = [df_prefixBF[['Memory usage', 'Prefix-BF Query time']], 
+                    df_prefixBF_doubting[['Memory usage', 'Prefix-BF+Doubting Query time']], 
+                    df_prefixQF[['Memory usage', 'Prefix-QF Query time']], 
+                    df_prefixQF_doubting[['Memory usage', 'Prefix-QF+Doubting Query time']]]
+    df = reduce(lambda left,right: pd.merge(left, right, how='outer', on='Memory usage'), dataframes)
+
+    with open(results_dir + "/" + dist + "_" + qt + "_query.txt", "w") as f:
         df.to_csv(f)
 
 def run_prefix_fitlering_test_with_surf():
@@ -95,7 +122,7 @@ def run_prefix_fitlering_test_with_surf():
         df.to_csv(f)
 
 #results_dir = "results/" + dir
-results_dir = "results/100k_2nd"
+results_dir = "results/100k_doubting_time"
 workload_dir = "workload-gen/workloads/%s/" % dir
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)

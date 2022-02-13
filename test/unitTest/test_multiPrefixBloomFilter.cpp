@@ -1,22 +1,22 @@
 #include "gtest/gtest.h"
-#include "PrefixBloomFilter.h"
+#include "MultiPrefixBloomFilter.h"
 
 namespace range_filtering {
-    namespace prefix_bloom_filter_test {
+    namespace multi_prefix_bloom_filter_test {
 
-        class PrefixBloomFilterUnitTest : public ::testing::Test {
+    class MultiPrefixBloomFilterUnitTest : public ::testing::Test {
 
-        };
+    };
 
-        TEST_F(PrefixBloomFilterUnitTest, emptyTrie) {
+        TEST_F(MultiPrefixBloomFilterUnitTest, emptyTrie) {
             auto keys = std::vector<std::string>();
-            auto trie = PrefixBloomFilter(keys, 8000);
+            auto trie = MultiPrefixBloomFilter(keys, 8000);
 
             ASSERT_FALSE(trie.lookupPrefix("anything"));
             ASSERT_TRUE(trie.lookupPrefix(""));
         }
 
-        TEST_F(PrefixBloomFilterUnitTest, simpleTrie) {
+        TEST_F(MultiPrefixBloomFilterUnitTest, simpleTrie) {
             std::vector<std::string> keys = {
                     "f",
                     "far",
@@ -26,7 +26,7 @@ namespace range_filtering {
                     "toy",
                     "trie",
             };
-            auto trie = PrefixBloomFilter(keys, 8000);
+            auto trie = MultiPrefixBloomFilter(keys, 8000);
 
             ASSERT_TRUE(trie.lookupPrefix("f"));
             ASSERT_TRUE(trie.lookupPrefix("fa"));
@@ -42,7 +42,7 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupPrefix("trri"));
         }
 
-        TEST_F(PrefixBloomFilterUnitTest, compactTrie) {
+        TEST_F(MultiPrefixBloomFilterUnitTest, compactTrie) {
             std::vector<std::string> keys = {
                     "ba",
                     "baba",
@@ -50,7 +50,7 @@ namespace range_filtering {
                     "banana",
                     "bananas"
             };
-            auto trie = PrefixBloomFilter(keys, 8000);
+            auto trie = MultiPrefixBloomFilter(keys, 8000);
 
             // true positives
             ASSERT_TRUE(trie.lookupPrefix("b"));
@@ -77,7 +77,7 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupPrefix("bannnns"));
         }
 
-        TEST_F(PrefixBloomFilterUnitTest, simpleTrieWithDoubting) {
+        TEST_F(MultiPrefixBloomFilterUnitTest, simpleTrieWithDoubting) {
             std::vector<std::string> keys = {
                     "f",
                     "far",
@@ -87,7 +87,7 @@ namespace range_filtering {
                     "toy",
                     "trie",
             };
-            auto trieWithFPsNoDoubting = PrefixBloomFilter(keys, 50, 0);
+            auto trieWithFPsNoDoubting = MultiPrefixBloomFilter(keys, 50, 0);
 
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("f"));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fa"));
@@ -95,6 +95,7 @@ namespace range_filtering {
             // false positives
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fest"));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fase"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("trri"));
 
             ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("faster"));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fast"));
@@ -102,15 +103,16 @@ namespace range_filtering {
             ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("tried"));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix(("fas")));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix(("tri")));
-            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("trri"));
 
-            auto trieWithDoubting = PrefixBloomFilter(keys, 50, 3);
+
+            auto trieWithDoubting = MultiPrefixBloomFilter(keys, 50, 3);
 
             ASSERT_TRUE(trieWithDoubting.lookupPrefix("f"));
             ASSERT_TRUE(trieWithDoubting.lookupPrefix("fa"));
 
             // not false positives this time
             ASSERT_FALSE(trieWithDoubting.lookupPrefix("fest"));
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("trri"));
 
             // still false positive as doubting doesn't help in this case
             ASSERT_TRUE(trieWithDoubting.lookupPrefix("fase"));
@@ -122,9 +124,8 @@ namespace range_filtering {
             ASSERT_FALSE(trieWithDoubting.lookupPrefix("tried"));
             ASSERT_TRUE(trieWithDoubting.lookupPrefix(("fas")));
             ASSERT_TRUE(trieWithDoubting.lookupPrefix(("tri")));
-            ASSERT_FALSE(trieWithDoubting.lookupPrefix("trri"));
         }
-    } // namespace prefix_bloom_filter_test
+    } // namespace multi_prefix_bloom_filter_test
 } // namespace range_filtering
 
 int main (int argc, char** argv) {
