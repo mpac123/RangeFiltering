@@ -34,12 +34,10 @@ namespace bench {
         }
     }
 
-    // 0 < percent <= 100
-    void selectKeysToInsert(const unsigned percent,
+    void selectKeysToInsert(const unsigned num_insert_keys,
                             std::vector<std::string> &insert_keys,
                             std::vector<std::string> &keys) {
         std::shuffle(keys.begin(), keys.end(), std::mt19937(std::random_device()()));
-        uint64_t num_insert_keys = keys.size() * percent / 100;
         for (uint64_t i = 0; i < num_insert_keys; i++)
             insert_keys.push_back(keys[i]);
 
@@ -115,15 +113,20 @@ namespace bench {
         double total_query_time = 0.;
         for (const auto& prefix : prefixes) {
             bool foundInTrie = trie.lookupPrefix(prefix);
-            auto start = std::chrono::system_clock::now();
-            bool foundInFilter = filter->lookupPrefix(prefix);
-            auto end = std::chrono::system_clock::now();
-            std::chrono::duration<double> elapsed_seconds = end-start;
+            double total_time = 0.0;
+            bool foundInFilter;
+            for (size_t i = 0; i < 10; i++) {
+                auto start = std::chrono::system_clock::now();
+                foundInFilter = filter->lookupPrefix(prefix);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end-start;
+                total_time += elapsed_seconds.count();
+            }
 
             negatives += (int) !foundInFilter;
             false_positives += (int) (!foundInTrie && foundInFilter);
             true_negatives += (int) (!foundInFilter && !foundInTrie);
-            total_query_time += elapsed_seconds.count();
+            total_query_time += total_time / 10;
         }
 
         assert(negatives == true_negatives);

@@ -3,6 +3,7 @@
 
 #include <BloomFilter.h>
 #include <PrefixFilter.h>
+#include <unordered_set>
 
 namespace range_filtering {
 
@@ -16,7 +17,7 @@ public:
 
     uint64_t getBFSize() { return bloomFilter_->getSize(); }
     double getFPR() { return bloomFilter_->getFPR(); }
-    uint8_t getNumberOfHashes() { return bloomFilter_->getNumberOfHashes(); }
+    uint16_t getNumberOfHashes() { return bloomFilter_->getNumberOfHashes(); }
 
 private:
     bloom_filter::BloomFilter *bloomFilter_;

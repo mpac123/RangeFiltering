@@ -9,13 +9,14 @@ range_filtering::PrefixBloomFilter::PrefixBloomFilter(std::vector<std::string> &
 }
 
 std::vector<std::string> range_filtering::PrefixBloomFilter::generateAllPrefixes(std::vector<std::string> &keys) {
-    std::vector<std::string> all_prefixes = std::vector<std::string>();
+    std::unordered_set<std::string> all_prefixes = std::unordered_set<std::string>();
     for (const auto& key : keys) {
         for (size_t i = 1; i <= key.length(); i++) {
-            all_prefixes.push_back(key.substr(0, i));
+            all_prefixes.insert(key.substr(0, i));
         }
     }
-    return all_prefixes;
+    auto result = std::vector<std::string>(all_prefixes.begin(), all_prefixes.end());
+    return result;
 }
 
 bool range_filtering::PrefixBloomFilter::lookupPrefix(const std::string& prefix) {
@@ -29,6 +30,7 @@ bool range_filtering::PrefixBloomFilter::lookupPrefix(const std::string& prefix)
         if (query.length() == 0) return true;
         may_exist = bloomFilter_->lookupKey(query);
         if (!may_exist) return false;
+        query = prefix.substr(0, query.length() - 1);
     }
     return true;
 }

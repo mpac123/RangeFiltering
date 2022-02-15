@@ -5,6 +5,7 @@ int main(int argc, char *argv[]) {
     std::string query_type = "similar";
     std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/100k/";
     uint64_t max_doubting_level = 0;
+    bool multilevel = false;
 
     std::tuple<uint32_t, uint32_t> prefixQF_params = {1, 8};
 
@@ -22,6 +23,11 @@ int main(int argc, char *argv[]) {
         max_doubting_level = std::stoi(argv[6]);
     }
 
+    if (argc > 7) {
+        std::string type = argv[7];
+        multilevel = type == "multi";
+    }
+
     std::string input_filename = input_dir + data_type + "_input.txt";
     std::string query_filename = input_dir + data_type + "_queries_" + query_type + ".txt";
 
@@ -37,6 +43,11 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Memory usage\tFPR Prefix-QF\tFP Prob QF\tq\tr\tCreation time\tQuery time" << std::endl;
-    prefixBF_bench::runTestsPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params), keys, prefixes,
-                                max_doubting_level);
+    if (multilevel) {
+        prefixBF_bench::runTestsMultiPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params), keys, prefixes,
+                                         max_doubting_level);
+    } else {
+        prefixBF_bench::runTestsPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params), keys, prefixes,
+                                    max_doubting_level);
+    }
 }

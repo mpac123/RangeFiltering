@@ -76,6 +76,54 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupPrefix("bannnn"));
             ASSERT_FALSE(trie.lookupPrefix("bannnns"));
         }
+
+        TEST_F(PrefixBloomFilterUnitTest, simpleTrieWithDoubting) {
+            std::vector<std::string> keys = {
+                    "f",
+                    "far",
+                    "fast",
+                    "s",
+                    "top",
+                    "toy",
+                    "trie",
+            };
+            auto trieWithFPsNoDoubting = PrefixBloomFilter(keys, 50, 0);
+
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("f"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fa"));
+
+            // false positives
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fest"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fase"));
+
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("faster"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fast"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("trie"));
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("tried"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix(("fas")));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix(("tri")));
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("trri"));
+
+            auto trieWithDoubting = PrefixBloomFilter(keys, 50, 3);
+
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("f"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("fa"));
+
+            // not false positives this time
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("fest"));
+
+            // still false positive as doubting doesn't help in this case
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("fase"));
+
+            // these shouldn't change
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("faster"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("fast"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("trie"));
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("tried"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix(("fas")));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix(("tri")));
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("trri"));
+        }
     } // namespace prefix_bloom_filter_test
 } // namespace range_filtering
 

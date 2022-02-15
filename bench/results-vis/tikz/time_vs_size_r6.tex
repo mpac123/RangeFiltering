@@ -1,0 +1,98 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{crimson2143940}{RGB}{214,39,40}
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+tick align=outside,
+tick pos=left,
+x grid style={darkgray176},
+xlabel={alpha (n/m)},
+xmin=0.215625, xmax=0.971875,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel=\textcolor{crimson2143940}{FPR},
+ymin=0, ymax=0.2,
+ytick style={color=black}
+]
+\addplot [semithick, crimson2143940]
+table {%
+0.25 0.00387901
+0.28125 0.00433801
+0.3125 0.00481901
+0.34375 0.00529301
+0.375 0.00577601
+0.40625 0.00628001
+0.4375 0.00677001
+0.46875 0.00725401
+0.5 0.00773802
+0.53125 0.00821302
+0.5625 0.00871302
+0.59375 0.00919602
+0.625 0.00967102
+0.65625 0.010163
+0.6875 0.010652
+0.71875 0.011127
+0.75 0.011608
+0.78125 0.012073
+0.8125 0.012533
+0.84375 0.013001
+0.875 0.013487
+0.90625 0.013944
+0.9375 0.014413
+};
+\end{axis}
+
+\begin{axis}[
+axis y line=right,
+tick align=outside,
+x grid style={darkgray176},
+xmin=0.215625, xmax=0.971875,
+xtick pos=left,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel=\textcolor{steelblue31119180}{Query time [s]},
+ymin=1e-07, ymax=8e-07,
+ytick pos=right,
+ytick style={color=black},
+ytick={1e-07,2e-07,3e-07,4e-07,5e-07,6e-07,7e-07,8e-07},
+yticklabel style={anchor=west},
+yticklabels={1,2,3,4,5,6,7,8}
+]
+\addplot [semithick, steelblue31119180]
+table {%
+0.25 9.42729e-08
+0.28125 9.50493e-08
+0.3125 9.23909e-08
+0.34375 9.13673e-08
+0.375 9.22752e-08
+0.40625 9.50743e-08
+0.4375 9.63585e-08
+0.46875 9.63465e-08
+0.5 9.7914e-08
+0.53125 1.00632e-07
+0.5625 1.05542e-07
+0.59375 1.06866e-07
+0.625 1.08984e-07
+0.65625 1.16366e-07
+0.6875 1.18976e-07
+0.71875 1.28021e-07
+0.75 1.39919e-07
+0.78125 1.56675e-07
+0.8125 1.8326e-07
+0.84375 2.26463e-07
+0.875 2.88423e-07
+0.90625 4.12503e-07
+0.9375 6.91913e-07
+};
+\end{axis}
+
+\draw ({$(current bounding box.south west)!0.5!(current bounding box.south east)$}|-{$(current bounding box.south west)!0.98!(current bounding box.north west)$}) node[
+  scale=0.6,
+  anchor=north,
+  text=black,
+  rotate=0.0
+]{r = 6};
+\end{tikzpicture}
