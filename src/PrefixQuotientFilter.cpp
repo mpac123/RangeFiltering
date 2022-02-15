@@ -10,7 +10,7 @@ namespace range_filtering {
         if (prefixes.empty()) q_ = 2; else {
             auto q = int(std::ceil(std::log2(prefixes.size())));
             auto alpha = prefixes.size() / (double(2 << (q - 1)));
-            if (alpha < 0.6) q_ = q; else q_ = q + 1;
+            if (alpha < 0.75) q_ = q; else q_ = q + 1;
         }
 
         n_ = prefixes.size();

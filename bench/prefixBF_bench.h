@@ -7,6 +7,8 @@
 #include "PrefixQuotientFilter.h"
 #include "bench.h"
 #include "SuRFFacade.h"
+#include "MultiPrefixBloomFilter.h"
+#include "MultiPrefixQuotientFilter.h"
 
 namespace prefixBF_bench {
 
@@ -15,6 +17,18 @@ namespace prefixBF_bench {
             arr_size = prefixBF->getBFSize();
             theoretical_FPR = prefixBF->getFPR();
             hashesCnt = prefixBF->getNumberOfHashes();
+            FPR = FPR_;
+            memoryUsage = prefixBF->getMemoryUsage();
+            creationTime = creationTime_;
+            queryTime = queryTime_;
+        }
+        PrefixBF_Stats(range_filtering::MultiPrefixBloomFilter *prefixBF, double FPR_, double creationTime_, double queryTime_) {
+            arr_size = 0;
+            for (auto size : prefixBF->getBFsSizes()) {
+                arr_size += size;
+            }
+            theoretical_FPR = -1;
+            hashesCnt = -1;
             FPR = FPR_;
             memoryUsage = prefixBF->getMemoryUsage();
             creationTime = creationTime_;
@@ -45,6 +59,15 @@ namespace prefixBF_bench {
             creationTime = creationTime_;
             queryTime = queryTime_;
         }
+        PrefixQF_Stats(range_filtering::MultiPrefixQuotientFilter *prefixQF, double FPR_, uint32_t r_, double creationTime_, double queryTime_) {
+            falsePositiveProb = -1;
+            FPR = FPR_;
+            memoryUsage = prefixQF->getMemoryUsage();
+            q = -1;
+            r = r_;
+            creationTime = creationTime_;
+            queryTime = queryTime_;
+        }
         double falsePositiveProb;
         double FPR;
         uint64_t memoryUsage;
@@ -63,16 +86,28 @@ namespace prefixBF_bench {
     void runTestsPBF(uint32_t start_size, uint32_t end_size, uint32_t interval,
                      std::vector<std::string> insert_keys,
                      std::vector<std::string> prefixes,
-                     uint64_t max_doubting_level) {
+                     uint64_t max_doubting_level,
+                     bool multilevel) {
         auto trie = range_filtering::Trie(insert_keys);
         for (uint32_t s = start_size; s <= end_size; s += interval) {
             auto start = std::chrono::system_clock::now();
-            auto prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s, max_doubting_level);
+            range_filtering::PrefixFilter* prefix_BF;
+            if (multilevel) {
+                prefix_BF = new range_filtering::MultiPrefixBloomFilter(insert_keys, s, max_doubting_level);
+            } else {
+                prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s, max_doubting_level);
+            }
             auto end = std::chrono::system_clock::now();
 
             std::chrono::duration<double> elapsed_seconds = end-start;
             auto [fpr, query_time] = bench::calculateFPR(prefix_BF, trie, prefixes);
-            std::cout << PrefixBF_Stats(prefix_BF, fpr, elapsed_seconds.count(), query_time) << std::endl;
+            if (multilevel) {
+                std::cout << PrefixBF_Stats((range_filtering::MultiPrefixBloomFilter *) prefix_BF, fpr,
+                                            elapsed_seconds.count(), query_time) << std::endl;
+            } else {
+                std::cout << PrefixBF_Stats((range_filtering::PrefixBloomFilter *) prefix_BF, fpr,
+                                            elapsed_seconds.count(), query_time) << std::endl;
+            }
         }
     }
 
@@ -93,6 +128,25 @@ namespace prefixBF_bench {
                           << std::endl;
             } else {
                 // std::cout << "failed" << std::endl;
+            }
+        }
+    }
+
+    void runTestsMultiPQF(uint32_t start_r, uint32_t end_r,
+                     std::vector<std::string> insert_keys,
+                     std::vector<std::string> prefixes,
+                     uint64_t max_doubting_level) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint32_t r = start_r; r <= end_r; r++) {
+            auto start = std::chrono::system_clock::now();
+            auto prefix_QF = new range_filtering::MultiPrefixQuotientFilter(insert_keys, r, max_doubting_level);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
+
+            if (!prefix_QF->hasFailed()) {
+                auto [fpr, query_time] = bench::calculateFPR(prefix_QF, trie, prefixes);
+                std::cout << PrefixQF_Stats(prefix_QF, fpr, r, elapsed_seconds.count(), query_time)
+                          << std::endl;
             }
         }
     }

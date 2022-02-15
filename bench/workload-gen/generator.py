@@ -10,7 +10,7 @@ import scipy.stats
 @click.option('--length-avg', type=int, help='The average length of the generated words', required=True)
 @click.option('--length-sigma', type=int, help='Standard deviation in lengths of the generated words', required=True)
 @click.option('--letter-distribution', 
-                type=click.Choice(["uniform", "normal", "powerlaw"]), 
+                type=click.Choice(["uniform", "normal", "powerlaw", "last_letter_different"]), 
                 help='Distribution with which node`s child letters will be generated', 
                 required=True)
 @click.option('--normal_letter_distr_stddev',default=1, help='If letter-distribution=normal, set stddev to this value')
@@ -33,7 +33,10 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     choice_func = uniform_choice if letter_distribution == "uniform" else powerlaw_choice if letter_distribution=="powerlaw" else normal_choice
 
     click.echo("Generating words")
-    generate_node(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev)
+    if letter_distribution=="last_letter_different":
+        generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev)
+    else:
+        generate_node(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev)
 
     click.echo("Splitting words into input and queries")
     random.shuffle(words)
@@ -66,6 +69,13 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
         f.write("\n".join(queries_similar))
     with open('%s/%s_queries_last_letter.txt' % (dir, output), "w") as f:
         f.write("\n".join(queries_last_letter_changed))
+
+def generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev):
+    base = []
+    generate_node(base, int(n/2), alphabet, "", choice_func, norm, normal_letter_distr_stddev)
+    for word in base:
+        for i in range(4):
+            words.append(word + alphabet[i])
 
 def generate_node(words, n, alphabet, prefix, choice_func, norm, normal_letter_distr_stddev):
     mean = (len(alphabet) - 1) / 2
