@@ -9,6 +9,7 @@
 #include "SuRFFacade.h"
 #include "MultiPrefixBloomFilter.h"
 #include "MultiPrefixQuotientFilter.h"
+#include "SurfingTrie.h"
 
 namespace prefixBF_bench {
 
@@ -87,13 +88,17 @@ namespace prefixBF_bench {
                      std::vector<std::string> insert_keys,
                      std::vector<std::string> prefixes,
                      uint64_t max_doubting_level,
-                     bool multilevel) {
+                     bool multilevel,
+                     range_filtering::MultiPrefixBloomFilter::MemoryAllocationType memoryAllocationType,
+                     double maxMemoryAllocationPercentageDifference) {
         auto trie = range_filtering::Trie(insert_keys);
         for (uint32_t s = start_size; s <= end_size; s += interval) {
             auto start = std::chrono::system_clock::now();
             range_filtering::PrefixFilter* prefix_BF;
             if (multilevel) {
-                prefix_BF = new range_filtering::MultiPrefixBloomFilter(insert_keys, s, max_doubting_level);
+                prefix_BF = new range_filtering::MultiPrefixBloomFilter(insert_keys, s, max_doubting_level,
+                                                                        memoryAllocationType,
+                                                                        maxMemoryAllocationPercentageDifference);
             } else {
                 prefix_BF = new range_filtering::PrefixBloomFilter(insert_keys, s, max_doubting_level);
             }
@@ -162,6 +167,22 @@ namespace prefixBF_bench {
             std::chrono::duration<double> elapsed_seconds = end-start;
             auto [fpr, query_time] = bench::calculateFPR(surf_real, trie, prefixes);
             std::cout << surf_real->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << std::endl;
+        }
+    }
+
+    void runTestsSurfingTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                          std::vector<std::string> insert_keys,
+                          std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            auto start = std::chrono::system_clock::now();
+            auto surfing_trie = new range_filtering::SurfingTrie(insert_keys, i);
+            auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, i);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
+            auto [fpr, query_time] = bench::calculateFPR(surfing_trie, surf_real, trie, prefixes);
+            std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
                       << elapsed_seconds.count() << "\t" << query_time << std::endl;
         }
     }

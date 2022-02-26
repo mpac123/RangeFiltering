@@ -1,7 +1,9 @@
 #include <MultiPrefixBloomFilter.h>
 
 range_filtering::MultiPrefixBloomFilter::MultiPrefixBloomFilter(std::vector<std::string> &keys, uint32_t total_BFs_size,
-                                                                uint64_t max_doubting_level) {
+                                                                uint64_t max_doubting_level,
+                                                                MemoryAllocationType memoryAllocationType,
+                                                                double maximalDecreasePercentage) {
     auto all_prefixes_list = generateAllPrefixes(keys);
     auto all_prefixes_cnt = 0;
     for (const auto& prefixes : all_prefixes_list) {
@@ -9,7 +11,24 @@ range_filtering::MultiPrefixBloomFilter::MultiPrefixBloomFilter(std::vector<std:
     }
     bloomFilters_ = std::vector<bloom_filter::BloomFilter*>(all_prefixes_list.size());
     for (size_t i = 0; i < all_prefixes_list.size(); i++) {
-        auto BF_size = uint32_t(std::round((all_prefixes_list[i].size() + 0.) / all_prefixes_cnt * total_BFs_size));
+        uint32_t BF_size;
+        double discount = 0.0;
+        switch(memoryAllocationType) {
+            case proportional:
+                BF_size = uint32_t(std::round((all_prefixes_list[i].size() + 0.) / all_prefixes_cnt * total_BFs_size));
+                break;
+            case equal:
+                BF_size = uint32_t(std::round(total_BFs_size / all_prefixes_list.size()));
+                break;
+            case proportionalDecreasing:
+                discount = 1. - i/(all_prefixes_list.size() - 1.) * maximalDecreasePercentage;
+                BF_size = uint32_t(std::round((all_prefixes_list[i].size() + 0.) / all_prefixes_cnt * total_BFs_size * discount));
+                if (BF_size == 0) BF_size = 1;
+                break;
+            case equalDecreasing:
+                BF_size = uint32_t(std::round((total_BFs_size / all_prefixes_list.size() * (1. - i/all_prefixes_list.size() * maximalDecreasePercentage))));
+                break;
+        }
         bloomFilters_[i] = new bloom_filter::BloomFilter(all_prefixes_list[i], BF_size);
     }
     maxDoubtingLevel_ = max_doubting_level;
