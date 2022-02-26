@@ -135,6 +135,43 @@ namespace bench {
         return std::make_tuple(fp_rate, average_query_time);
     }
 
+    std::tuple<double, double> calculateFPR(range_filtering::PrefixFilter *filter01,
+                                            range_filtering::PrefixFilter *filter02,
+                                            range_filtering::Trie &trie,
+                                            std::vector<std::string> &prefixes) {
+        uint32_t negatives = 0;
+        uint32_t false_positives = 0;
+        uint32_t true_negatives = 0;
+        double total_query_time = 0.;
+        for (const auto& prefix : prefixes) {
+            bool foundInTrie = trie.lookupPrefix(prefix);
+            double total_time = 0.0;
+            bool foundInFilter01;
+            bool foundInFilter02;
+            for (size_t i = 0; i < 10; i++) {
+                auto start = std::chrono::system_clock::now();
+                foundInFilter01 = filter01->lookupPrefix(prefix);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end-start;
+                total_time += elapsed_seconds.count();
+            }
+            foundInFilter02 = filter02->lookupPrefix(prefix);
+            if (foundInFilter01 != foundInFilter02) {
+                std::cout << prefix << std::endl;
+            }
+
+            negatives += (int) !foundInFilter01;
+            false_positives += (int) (!foundInTrie && foundInFilter01);
+            true_negatives += (int) (!foundInFilter01 && !foundInTrie);
+            total_query_time += total_time / 10;
+        }
+
+        assert(negatives == true_negatives);
+        double fp_rate = false_positives / (negatives + false_positives + 0.0);
+        double average_query_time = total_query_time / prefixes.size();
+        return std::make_tuple(fp_rate, average_query_time);
+    }
+
     double calculateFPR(surf::SuRF *surf,
                         range_filtering::Trie &trie,
                         std::unordered_set<std::string> &prefixes) {

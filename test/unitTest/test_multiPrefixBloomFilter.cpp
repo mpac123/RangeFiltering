@@ -125,6 +125,80 @@ namespace range_filtering {
             ASSERT_TRUE(trieWithDoubting.lookupPrefix(("fas")));
             ASSERT_TRUE(trieWithDoubting.lookupPrefix(("tri")));
         }
+
+        TEST_F(MultiPrefixBloomFilterUnitTest, simpleTrieWithMoreDoubting) {
+            std::vector<std::string> keys = {
+                    "f",
+                    "far",
+                    "fast",
+                    "s",
+                    "top",
+                    "toy",
+                    "trie",
+            };
+            auto trieWithFPsNoDoubting = MultiPrefixBloomFilter(keys, 50, 0, MultiPrefixBloomFilter::MemoryAllocationType::proportionalDecreasing, 0.2);
+
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("f"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fa"));
+
+            // false positives
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fest"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fase"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("trri"));
+
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("faster"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fast"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("trie"));
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("tried"));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix(("fas")));
+            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix(("tri")));
+
+
+            auto trieWithDoubting = MultiPrefixBloomFilter(keys, 50, 3);
+
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("f"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("fa"));
+
+            // not false positives this time
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("fest"));
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("trri"));
+
+            // still false positive as doubting doesn't help in this case
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("fase"));
+
+            // these shouldn't change
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("faster"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("fast"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix("trie"));
+            ASSERT_FALSE(trieWithDoubting.lookupPrefix("tried"));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix(("fas")));
+            ASSERT_TRUE(trieWithDoubting.lookupPrefix(("tri")));
+        }
+
+        TEST_F(MultiPrefixBloomFilterUnitTest, simpleTrieWithDifferentDiscounts) {
+            std::vector<std::string> keys = {
+                    "f",
+                    "far",
+                    "fast",
+                    "s",
+                    "top",
+                    "toy",
+                    "trie",
+            };
+            auto bigTrie = MultiPrefixBloomFilter(keys, 500, 0, MultiPrefixBloomFilter::MemoryAllocationType::proportional);
+            auto mediumTrie = MultiPrefixBloomFilter(keys, 500, 0, MultiPrefixBloomFilter::MemoryAllocationType::proportionalDecreasing, 0.2);
+            auto smallTrie = MultiPrefixBloomFilter(keys, 500, 0, MultiPrefixBloomFilter::MemoryAllocationType::proportionalDecreasing, 0.5);
+
+            ASSERT_TRUE(bigTrie.lookupPrefix("f"));
+            ASSERT_TRUE(mediumTrie.lookupPrefix("f"));
+            ASSERT_TRUE(smallTrie.lookupPrefix("f"));
+            ASSERT_TRUE(bigTrie.lookupPrefix("fa"));
+            ASSERT_TRUE(mediumTrie.lookupPrefix("fa"));
+            ASSERT_TRUE(smallTrie.lookupPrefix("fa"));
+
+            ASSERT_TRUE(bigTrie.getMemoryUsage() > mediumTrie.getMemoryUsage());
+            ASSERT_TRUE(mediumTrie.getMemoryUsage() > smallTrie.getMemoryUsage());
+        }
     } // namespace multi_prefix_bloom_filter_test
 } // namespace range_filtering
 

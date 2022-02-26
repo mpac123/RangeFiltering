@@ -3,11 +3,11 @@ import pandas as pd
 import os
 from functools import reduce
 
-def run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, BF_max_doubting_level, multi = False):
+def run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, BF_max_doubting_level, multi = False, memory_allocation_type = "proportional", max_mem_allocation_diff = 0.0):
     cmd = ["../build/bench/prefixBF_bench", str(dist), str(qt), str(workload_dir), str(BF_min), str(BF_max), str(BF_interval), str(BF_max_doubting_level)]
     if multi:
-        cmd = ["../build/bench/prefixBF_bench", str(dist), str(qt), str(workload_dir), str(BF_min), str(BF_max), str(BF_interval), str(BF_max_doubting_level), "multi"]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        cmd = ["../build/bench/prefixBF_bench", str(dist), str(qt), str(workload_dir), str(BF_min), str(BF_max), str(BF_interval), str(BF_max_doubting_level), "multi", memory_allocation_type, str(max_mem_allocation_diff)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return pd.read_csv(p.stdout, delimiter="\t")
 
 def run_prefixQF_bench(dist, qt, workload_dir, QF_start_q, QF_end_q, QF_start_r, QF_end_r, QF_max_doubting_level, multi = False):
@@ -29,7 +29,7 @@ querytypes=["similar", "random", "last_letter"]
 dir="100k_new"
 test_id="prefix_filtering_surf"
 #test_id="prefix_filtering_no_surf"
-#test_id="multi_level"
+test_id="multi_level"
 #test_id = "qf"
 
 # Params for 100k and 1st experiment
@@ -67,6 +67,13 @@ if dir=="100k" and test_id=="prefix_filtering_no_surf":
     BF_interval=1000000
     QF_start_r=2
     QF_end_r=12
+
+if dir=="100k_new" and test_id=="multi_level":
+    BF_min=1000000
+    BF_max=15000000
+    BF_interval=500000
+    SR_suffix_size_min=0
+    SR_suffix_size_max=8
 
 def run_prefix_fitlering_test_without_surf():
     df_prefixBF = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 0)
@@ -136,28 +143,43 @@ def run_prefix_fitlering_test_with_surf():
         df.to_csv(f)
 
 def run_prefix_filtering_test_multilevel():
-    df_prefixBF = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 0)
-    df_multiPBF = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 0, True)
-    df_prefixQF = run_prefixQF_bench(dist, qt, workload_dir, QF_start_q, QF_end_q, QF_start_r, QF_end_r, 0)
-    df_multiPQF = run_prefixQF_bench(dist, qt, workload_dir, QF_start_q, QF_end_q, QF_start_r, QF_end_r, 0, True)
+    df_prefixBF = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3)
+    df_multiPBF_proportional_0 = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.0)
+    df_multiPBF_proportional_0_3 = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.3)
+    df_multiPBF_proportional_0_5 = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.5)
+    df_multiPBF_proportional_0_7 = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.7)
+    #df_multiPBF_equal_0 = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "equal", 0.0)
+    #df_multiPBF_equal_0_1 = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "equal", 0.1)
+    df_SuRFReal = run_SuRFReal_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_size_max)
 
-    df_multiPBF.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF'}, inplace=True)
-    df_multiPQF.rename(columns={'FPR Prefix-QF': 'FPR Multi-Prefix-QF'}, inplace=True)
+    df_multiPBF_proportional_0.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF (0.0)'}, inplace=True)
+    df_multiPBF_proportional_0_3.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF (0.3)'}, inplace=True)
+    df_multiPBF_proportional_0_5.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF (0.5)'}, inplace=True)
+    df_multiPBF_proportional_0_7.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF (0.7)'}, inplace=True)
+    #df_multiPBF_equal_0.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF Equal'}, inplace=True)
+    #df_multiPBF_equal_0_1.rename(columns={'FPR Prefix-BF': 'FPR Multi-Prefix-BF Equal With Decreasing'}, inplace=True)
+    df_SuRFReal.rename(columns={'FPR': 'FPR SuRFReal'}, inplace=True)
+
+    print(df_multiPBF_proportional_0_7)
 
     print("Creating DF with stats")
-    dataframes = [df_prefixBF[['Memory usage', 'FPR Prefix-BF']], 
-                    df_multiPBF[['Memory usage', 'FPR Multi-Prefix-BF', 'FP Prob BF']], 
-                    df_prefixQF[['Memory usage', 'FPR Prefix-QF', 'FP Prob QF']],
-                    df_multiPQF[['Memory usage', 'FPR Multi-Prefix-QF']]]
+    dataframes = [df_prefixBF[['Memory usage', 'FPR Prefix-BF']],
+                    df_multiPBF_proportional_0[['Memory usage', 'FPR Multi-Prefix-BF (0.0)']],
+                    df_multiPBF_proportional_0_3[['Memory usage', 'FPR Multi-Prefix-BF (0.3)']],
+                    df_multiPBF_proportional_0_5[['Memory usage', 'FPR Multi-Prefix-BF (0.5)']],
+                    df_multiPBF_proportional_0_7[['Memory usage', 'FPR Multi-Prefix-BF (0.7)']],
+                    df_SuRFReal[['Memory usage', 'FPR SuRFReal']]]
+                    #df_prefixQF[['Memory usage', 'FPR Prefix-QF', 'FP Prob QF']],
+                    #df_multiPQF[['Memory usage', 'FPR Multi-Prefix-QF']]]
     df = reduce(lambda left,right: pd.merge(left, right, how='outer', on='Memory usage'), dataframes)
 
     with open(results_dir + "/" + dist + "_" + qt + ".txt", "w") as f:
         df.to_csv(f)
 
 #results_dir = "results/" + dir
-#results_dir = "results/100k_multi"
+results_dir = "results/100k_multi"
 #results_dir = "results/100k_time"
-results_dir = "results/100k_smaller_qf"
+#results_dir = "results/100k_smaller_qf"
 workload_dir = "workload-gen/workloads/%s/" % dir
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
