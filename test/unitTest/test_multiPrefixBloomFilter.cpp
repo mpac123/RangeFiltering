@@ -141,10 +141,9 @@ namespace range_filtering {
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("f"));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fa"));
 
-            // false positives
-            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fest"));
-            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fase"));
-            ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("trri"));
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("fest"));
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("fase"));
+            ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("trri"));
 
             ASSERT_FALSE(trieWithFPsNoDoubting.lookupPrefix("faster"));
             ASSERT_TRUE(trieWithFPsNoDoubting.lookupPrefix("fast"));

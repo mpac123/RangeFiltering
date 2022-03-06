@@ -10,6 +10,10 @@
 #include "MultiPrefixBloomFilter.h"
 #include "MultiPrefixQuotientFilter.h"
 #include "SurfingTrie.h"
+#include "RestrainedSurfingTrie.h"
+#include "BloomedSurfingTrie.h"
+#include "SplashyTrie.h"
+#include "RestrainedSplashyTrie.h"
 
 namespace prefixBF_bench {
 
@@ -39,7 +43,7 @@ namespace prefixBF_bench {
         double theoretical_FPR;
         uint8_t hashesCnt;
         double FPR;
-        uint64_t memoryUsage;
+        unsigned long long memoryUsage;
         double creationTime;
         double queryTime;
     };
@@ -71,7 +75,7 @@ namespace prefixBF_bench {
         }
         double falsePositiveProb;
         double FPR;
-        uint64_t memoryUsage;
+        unsigned long long memoryUsage;
         uint32_t q;
         uint32_t r;
         double creationTime;
@@ -178,12 +182,139 @@ namespace prefixBF_bench {
         for (size_t i = start_real_bit; i <= end_real_bit; i++) {
             auto start = std::chrono::system_clock::now();
             auto surfing_trie = new range_filtering::SurfingTrie(insert_keys, i);
-            auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, i);
+            //auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, i);
             auto end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end-start;
-            auto [fpr, query_time] = bench::calculateFPR(surfing_trie, surf_real, trie, prefixes);
+            auto [fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
             std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
-                      << elapsed_seconds.count() << "\t" << query_time << std::endl;
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsAbsoluteRestraintSurfingTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                             uint64_t start_restraint, uint64_t end_restraint,
+                             std::vector<std::string> insert_keys,
+                             std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            for (size_t j = start_restraint; j <= end_restraint; j++) {
+                auto start = std::chrono::system_clock::now();
+                auto surfing_trie = new range_filtering::RestrainedSurfingTrie(insert_keys, i, range_filtering::RestraintType::absolute, j, 0.0);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
+                std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() <<  std::endl;
+            }
+        }
+    }
+
+    void runTestsRelativeRestraintSurfingTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                                              double start_restraint, double end_restraint, double interval_restraint,
+                                              std::vector<std::string> insert_keys,
+                                              std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            for (double j = start_restraint; j <= end_restraint; j += interval_restraint) {
+                auto start = std::chrono::system_clock::now();
+                auto surfing_trie = new range_filtering::RestrainedSurfingTrie(insert_keys, i, range_filtering::RestraintType::relative, 0, j);
+                auto memoryUsage = surfing_trie->getMemoryUsage();
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
+                std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() <<  std::endl;
+            }
+        }
+    }
+
+    void runTestsBloomedSurfingTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                                    uint32_t bf_min_size, uint32_t bf_max_size, uint32_t bf_interval,
+                                    std::vector<std::string> insert_keys,
+                                    std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t j = start_real_bit; j <= end_real_bit; j++) {
+            for (size_t i = bf_min_size; i <= bf_max_size; i += bf_interval) {
+                auto start = std::chrono::system_clock::now();
+                auto surfing_trie = new range_filtering::BloomedSurfingTrie(insert_keys, j, i, 0.7);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
+                std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << i << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                          << std::endl;
+            }
+        }
+    }
+
+    void runTestsSplashyTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                                    double splashiness_min, double splashiness_max, double splashiness_interval,
+                                    std::vector<std::string> insert_keys,
+                                    std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t j = start_real_bit; j <= end_real_bit; j++) {
+            for (double splashiness = splashiness_min;
+                 splashiness <= splashiness_max; splashiness += splashiness_interval) {
+                auto start = std::chrono::system_clock::now();
+                auto surfing_trie = new range_filtering::SplashyTrie(insert_keys, j, splashiness);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
+                std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << splashiness << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                          << std::endl;
+            }
+        }
+    }
+
+    void runTestsAbsoluteRestrainedSplashyTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                                              uint64_t start_restraint, uint64_t end_restraint,
+                                              double splashiness_min, double splashiness_max, double splashiness_interval,
+                                              std::vector<std::string> insert_keys,
+                                              std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            for (size_t j = start_restraint; j <= end_restraint; j++) {
+                for (double splashiness = splashiness_min;
+                     splashiness <= splashiness_max; splashiness += splashiness_interval) {
+                    auto start = std::chrono::system_clock::now();
+                    auto surfing_trie = new range_filtering::RestrainedSplashyTrie(insert_keys, i, splashiness,
+                                                                                   range_filtering::RestraintType::absolute,
+                                                                                   j, 0.0);
+                    auto end = std::chrono::system_clock::now();
+                    std::chrono::duration<double> elapsed_seconds = end - start;
+                    auto[fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
+                    std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
+                              << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                              << std::endl;
+                }
+            }
+        }
+    }
+
+    void runTestsRelativeRestrainedSplashyTrie(uint32_t start_real_bit, uint32_t end_real_bit,
+                                              double start_restraint, double end_restraint, double interval_restraint,
+                                               double splashiness_min, double splashiness_max, double splashiness_interval,
+                                              std::vector<std::string> insert_keys,
+                                              std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (size_t i = start_real_bit; i <= end_real_bit; i++) {
+            for (double j = start_restraint; j <= end_restraint; j += interval_restraint) {
+                for (double splashiness = splashiness_min;
+                     splashiness <= splashiness_max; splashiness += splashiness_interval) {
+                    auto start = std::chrono::system_clock::now();
+                    auto surfing_trie = new range_filtering::RestrainedSplashyTrie(insert_keys, i, splashiness,
+                                                                                   range_filtering::RestraintType::relative,
+                                                                                   0, j);
+                    auto memoryUsage = surfing_trie->getMemoryUsage();
+                    auto end = std::chrono::system_clock::now();
+                    std::chrono::duration<double> elapsed_seconds = end - start;
+                    auto[fpr, query_time] = bench::calculateFPR(surfing_trie, trie, prefixes);
+                    std::cout << surfing_trie->getMemoryUsage() << "\t" << fpr << "\t" << end_real_bit << "\t"
+                              << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                              << std::endl;
+                }
+            }
         }
     }
 

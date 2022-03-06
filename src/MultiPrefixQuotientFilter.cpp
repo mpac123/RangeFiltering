@@ -66,7 +66,7 @@ bool range_filtering::MultiPrefixQuotientFilter::lookupPrefix(const std::string 
     return true;
 }
 
-uint64_t range_filtering::MultiPrefixQuotientFilter::getMemoryUsage() const {
+unsigned long long range_filtering::MultiPrefixQuotientFilter::getMemoryUsage() const {
     uint64_t usage = sizeof(quotientFilters_);
     for (auto q : qs_) {
         usage += qf_table_size(q, r_);

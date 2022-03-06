@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "SurfingTrie.h"
+#include "../../bench/SuRFFacade.h"
 
 namespace range_filtering {
     namespace surfing_trie_test {
@@ -79,6 +80,47 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupPrefix("fase"));
             ASSERT_FALSE(trie.lookupPrefix("trr"));
             ASSERT_FALSE(trie.lookupPrefix("trri"));
+        }
+
+        TEST_F(SurfingTrieUnitTest, surfBaseVsSurfingTrie) {
+            std::vector<std::string> keys = {
+                    "f",
+                    "far",
+                    "fast",
+                    "s",
+                    "top",
+                    "toy",
+                    "trrrriangle",
+                    "trrrrieghf",
+                    "trrrriiangle",
+            };
+            auto trie = SurfingTrie(keys, 0);
+            auto surf = SuRFFacade(keys, false, 0);
+
+            ASSERT_TRUE(trie.lookupPrefix("f"));
+            ASSERT_TRUE(trie.lookupPrefix("fa"));
+            ASSERT_FALSE(trie.lookupPrefix("fest"));
+            ASSERT_TRUE(trie.lookupPrefix("fast"));
+            //ASSERT_TRUE(trie.lookupPrefix("trie"));
+
+            ASSERT_TRUE(trie.lookupPrefix(("fas")));
+            //ASSERT_TRUE(trie.lookupPrefix(("tri")));
+
+            // false positives
+//            ASSERT_TRUE(trie.lookupPrefix("tried"));
+//            ASSERT_TRUE(trie.lookupPrefix("tries"));
+//            ASSERT_TRUE(trie.lookupPrefix("tria"));
+//            ASSERT_TRUE(trie.lookupPrefix("faster"));
+
+            // not false positives this time
+//            ASSERT_FALSE(trie.lookupPrefix("fase"));
+//            ASSERT_FALSE(trie.lookupPrefix("trr"));
+//            ASSERT_FALSE(trie.lookupPrefix("trri"));
+
+            //ASSERT_FALSE(trie.lookupPrefix("fat"));
+            ASSERT_TRUE(surf.lookupPrefix("trrrri"));
+            //ASSERT_TRUE(surf.lookupPrefix("trrrrj"));
+            ASSERT_TRUE(surf.lookupPrefix("trrrrieh"));
         }
 
 

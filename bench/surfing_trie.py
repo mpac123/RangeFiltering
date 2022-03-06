@@ -37,9 +37,13 @@ for dist in distributions:
         df_surf.rename(columns={'FPR': 'FPR SuRFReal'}, inplace=True)
 
         print("Creating DF with stats")
-        dfs = [df_surfing_trie[['Memory usage', 'FPR Surfing Trie']],
-               df_surf[['Memory usage', 'FPR SuRFReal']]]
+        dfs = [df_surfing_trie[['FPR Surfing Trie']],
+               df_surf[['FPR SuRFReal']]]
 
-        df = reduce(lambda left,right: pd.merge(left, right, how='outer', on='Memory usage'), dfs)
+        print(df_surf.head())
+        print(df_surfing_trie.head())
+
+        #df = reduce(lambda left,right: pd.merge(left, right, how='outer', on='Memory usage'), dfs)
+        df = pd.concat(dfs, axis=1)
         with open(results_dir + "/" + dist + "_" + qt + ".txt", "w") as f:
             df.to_csv(f)

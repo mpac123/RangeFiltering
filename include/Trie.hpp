@@ -17,11 +17,17 @@ public:
         TrieNode *parent;
         std::map<char, TrieNode *> children;
         bool end_of_word;
+        uint64_t height_;
+        uint64_t children_count_;
+        uint64_t level_;
 
         TrieNode();
         explicit TrieNode(TrieNode* parent);
 
-        uint64_t getMemoryUsage() const;
+        unsigned long long getMemoryUsage() const;
+        uint64_t calculateHeight();
+        uint64_t calculateChildrenCount();
+        void calculateLevel(uint64_t level);
     };
 
     class Iter {
@@ -48,6 +54,8 @@ public:
     };
 
 public:
+    TrieNode *root;
+
     // Currently, keys must be sorted
     explicit Trie(std::vector<std::string> &keys);
 
@@ -56,12 +64,10 @@ public:
     Trie::Iter moveToKeyGreaterThan(const std::string& key, const bool inclusive);
     bool lookupRange(const std::string& left_key, const bool left_inclusive,
                      const std::string& right_key, const bool right_inclusive);
-    uint64_t getMemoryUsage() const override;
+    unsigned long long getMemoryUsage() const override;
     std::string getName() const override { return "Trie"; }
 
 private:
-    TrieNode *root;
-
     void insert(TrieNode *node, uint64_t position, std::vector<std::string> &keys);
     bool lookupNode(const std::string &key, uint64_t position, TrieNode *node, bool exact);
 
