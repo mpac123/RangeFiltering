@@ -17,6 +17,10 @@ Trie::TrieNode::TrieNode(TrieNode* _parent) {
 Trie::Trie(std::vector<std::string> &keys) : PrefixFilter() {
     root = new TrieNode();
     insert(root, 0, keys);
+
+    root->calculateChildrenCount();
+    root->calculateHeight();
+    root->calculateLevel(0);
 }
 
 void Trie::insert(TrieNode *node, uint64_t position, std::vector<std::string> &keys) {
@@ -209,16 +213,42 @@ bool Trie::lookupRange(const std::string& left_key, const bool left_inclusive,
     return false;
 }
 
-uint64_t Trie::TrieNode::getMemoryUsage() const {
-    uint64_t children_size = 0;
+unsigned long long Trie::TrieNode::getMemoryUsage() const {
+    unsigned long long children_size = 0;
     for (auto child : children) {
         children_size += child.second->getMemoryUsage();
     }
-    return sizeof(Trie::TrieNode) + children_size;
+    // char + 64-bit pointer per each child + boolean flag
+    uint64_t node_size_bits = (8 + 64) * children.size() + 1;
+    return node_size_bits + children_size;
 }
 
-uint64_t Trie::getMemoryUsage() const {
+unsigned long long Trie::getMemoryUsage() const {
     return sizeof(Trie) + root->getMemoryUsage();
+}
+
+uint64_t Trie::TrieNode::calculateHeight() {
+    height_ = 0;
+    for (auto child : children) {
+        height_ = std::max(height_, child.second->calculateHeight() + 1);
+
+    }
+    return height_;
+}
+
+uint64_t Trie::TrieNode::calculateChildrenCount() {
+    children_count_ = 0;
+    for (auto child : children) {
+        children_count_ += 1 + child.second->calculateChildrenCount();
+    }
+    return children_count_;
+}
+
+void Trie::TrieNode::calculateLevel(uint64_t level) {
+    level_ = level;
+    for (auto child : children) {
+        child.second->calculateLevel(level_ + 1);
+    }
 }
 
 } // namespace range_filtering

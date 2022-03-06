@@ -7,11 +7,11 @@ namespace range_filtering {
         children_ = std::map<char, TrieNode *>();
     }
 
-    uint64_t CompactTrie::TrieNode::getMemoryUsage() const {
+    unsigned long long CompactTrie::TrieNode::getMemoryUsage() const {
         return sizeof(CompactTrie::TrieNode) + getChildrenMemoryUsage();
     }
 
-    uint64_t CompactTrie::TrieNode::getChildrenMemoryUsage() const {
+    unsigned long long CompactTrie::TrieNode::getChildrenMemoryUsage() const {
         uint64_t children_size = 0;
         for (auto child : children_) {
             children_size += child.second->getMemoryUsage();
@@ -19,7 +19,7 @@ namespace range_filtering {
         return children_size;
     }
 
-    uint64_t CompactTrie::CompactNode::getMemoryUsage() const {
+    unsigned long long CompactTrie::CompactNode::getMemoryUsage() const {
         return sizeof(CompactTrie::TrieNode) + getChildrenMemoryUsage();
     }
 
@@ -195,7 +195,7 @@ namespace range_filtering {
         return false;
     }
 
-    uint64_t CompactTrie::getMemoryUsage() const {
+    unsigned long long CompactTrie::getMemoryUsage() const {
         return sizeof(CompactTrie) + root->getMemoryUsage();
     }
 }

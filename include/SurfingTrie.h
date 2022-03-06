@@ -12,7 +12,7 @@ class SurfingTrie : public PrefixFilter {
 public:
     explicit SurfingTrie(std::vector<std::string> &keys, uint64_t max_suffix_length);
     bool lookupPrefix(const std::string &prefix) override;
-    uint64_t getMemoryUsage() const override;
+    unsigned long long getMemoryUsage() const override;
     std::string getName() const override { return "SurfingTrie"; }
 
 protected:
@@ -22,7 +22,7 @@ protected:
 
         TrieNode(SurfingTrie const& trie);
         virtual bool lookupNode(const std::string &key, uint64_t position);
-        virtual uint64_t getMemoryUsage() const;
+        virtual unsigned long long getMemoryUsage() const;
 
     private:
         std::map<char, TrieNode *> children_;
@@ -30,7 +30,7 @@ protected:
         void insertKeys(uint64_t position, std::vector<std::string> &keys);
         void insertChildNode(char current, uint64_t position, std::vector<std::string> &keys);
 
-        uint64_t getChildrenMemoryUsage() const;
+        unsigned long long getChildrenMemoryUsage() const;
 
         friend class SurfingTrie;
     };
@@ -39,7 +39,7 @@ protected:
     protected:
         LeafNode(SurfingTrie const& trie, uint8_t suffix);
         bool lookupNode(const std::string &key, uint64_t position) override;
-        uint64_t getMemoryUsage() const override;
+        unsigned long long getMemoryUsage() const override;
 
         uint8_t suffix_;
 

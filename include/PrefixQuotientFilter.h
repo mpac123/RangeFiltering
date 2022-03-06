@@ -19,7 +19,7 @@ public:
 
     bool lookupPrefix(const std::string &prefix) override;
 
-    uint64_t getMemoryUsage() const override;
+    unsigned long long getMemoryUsage() const override;
 
     std::string getName() const override {
         return "PrefixQF q=" + std::to_string(q_) + " r = " + std::to_string(r_);

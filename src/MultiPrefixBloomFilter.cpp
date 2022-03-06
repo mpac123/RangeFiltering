@@ -71,7 +71,7 @@ bool range_filtering::MultiPrefixBloomFilter::lookupPrefix(const std::string &pr
     return true;
 }
 
-uint64_t range_filtering::MultiPrefixBloomFilter::getMemoryUsage() const {
+unsigned long long range_filtering::MultiPrefixBloomFilter::getMemoryUsage() const {
     uint64_t usage = sizeof(bloomFilters_);
     for (auto bf : bloomFilters_) {
         usage += bf->getMemoryUsage();

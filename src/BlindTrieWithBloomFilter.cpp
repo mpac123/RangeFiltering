@@ -12,15 +12,15 @@ namespace range_filtering {
         length_ = length;
     }
 
-    uint64_t BlindTrieWithBloomFilter::Node::getMemoryUsage() const {
+    unsigned long long BlindTrieWithBloomFilter::Node::getMemoryUsage() const {
         return sizeof(BlindTrieWithBloomFilter::Node) + getChildrenMemoryUsage();
     }
 
-    uint64_t BlindTrieWithBloomFilter::BlindNode::getMemoryUsage() const {
+    unsigned long long BlindTrieWithBloomFilter::BlindNode::getMemoryUsage() const {
         return sizeof (BlindTrieWithBloomFilter::BlindNode) + getChildrenMemoryUsage();
     }
 
-    uint64_t BlindTrieWithBloomFilter::Node::getChildrenMemoryUsage() const {
+    unsigned long long BlindTrieWithBloomFilter::Node::getChildrenMemoryUsage() const {
         uint64_t children_size = 0;
         for (auto child : children_) {
             children_size += child.second->getMemoryUsage();
@@ -193,7 +193,7 @@ namespace range_filtering {
         return false;
     }
 
-    uint64_t BlindTrieWithBloomFilter::getMemoryUsage() const {
+    unsigned long long BlindTrieWithBloomFilter::getMemoryUsage() const {
         return sizeof(BlindTrieWithBloomFilter) + root_->getMemoryUsage() + bloomFilter_->getMemoryUsage();
     }
 
