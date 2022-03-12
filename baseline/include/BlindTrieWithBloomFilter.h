@@ -15,7 +15,7 @@ public:
     // Keys must be sorted
     explicit BlindTrieWithBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size);
     bool lookupPrefix(const std::string &prefix) override;
-    unsigned long long getMemoryUsage() const override;
+    uint64_t getMemoryUsage() const override;
     std::string getName() const override { return "BloomTrie " + std::to_string(bloomFilter_->getSize()); }
 
 private:
@@ -32,7 +32,7 @@ private:
         void insertChildNode(char current, uint64_t position,
                              std::vector<std::string> &keys,
                              std::vector<std::string> &hashed_substrings);
-        virtual unsigned long long getMemoryUsage() const;
+        virtual uint64_t getMemoryUsage() const;
         unsigned long long getChildrenMemoryUsage() const;
         static void generatePrefixes(std::string &word, uint64_t start_position, std::vector<std::string> &hashed_prefixes);
 
@@ -42,7 +42,7 @@ private:
     class BlindNode : public Node {
     protected:
         BlindNode(uint64_t fingerprint, uint64_t length);
-        unsigned long long getMemoryUsage() const override;
+        uint64_t getMemoryUsage() const override;
 
         uint8_t fingerprint_;
         uint64_t length_;

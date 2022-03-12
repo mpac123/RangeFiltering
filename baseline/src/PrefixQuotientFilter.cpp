@@ -51,7 +51,7 @@ namespace range_filtering {
         return true;
     }
 
-    unsigned long long PrefixQuotientFilter::getMemoryUsage() const {
+    uint64_t PrefixQuotientFilter::getMemoryUsage() const {
         assert(!failed_);
         return qf_table_size(q_, r_);
     }

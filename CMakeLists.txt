@@ -15,19 +15,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/baseline/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/basic_filters/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/basic_filters/external/mmh")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/quotient-filter")
 
 enable_testing()
 
-add_subdirectory(src)
-add_subdirectory(test)
+add_subdirectory(baseline)
 add_subdirectory(bench)
 add_subdirectory(external/SuRF)
 add_subdirectory(basic_filters)
 add_subdirectory(external/quotient-filter)
+add_subdirectory(succinct_trie)
 
 add_executable(main main.cpp)
 target_link_libraries(main TRIE)

@@ -16,7 +16,7 @@ namespace range_filtering {
     public:
         explicit MultiPrefixQuotientFilter(std::vector<std::string> &keys, uint32_t r, uint64_t max_doubting_level = 0);
         bool lookupPrefix(const std::string& prefix) override;
-        unsigned long long getMemoryUsage() const override;
+        uint64_t getMemoryUsage() const override;
         std::string getName() const override { return "MultiPrefixQF"; }
 
         bool hasFailed() const { return failed_; }

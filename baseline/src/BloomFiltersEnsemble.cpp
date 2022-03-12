@@ -33,7 +33,7 @@ bool range_filtering::BloomFiltersEnsemble::lookupKey(const std::string &prefix)
     return bloomFilters_[prefix.size() - 1 - padding_]->lookupKey(prefix);
 }
 
-unsigned long long range_filtering::BloomFiltersEnsemble::getMemoryUsage() const {
+uint64_t range_filtering::BloomFiltersEnsemble::getMemoryUsage() const {
     uint64_t usage = sizeof(bloomFilters_);
     for (auto bf : bloomFilters_) {
         usage += bf->getMemoryUsage();

@@ -123,6 +123,8 @@ namespace bench {
                 total_time += elapsed_seconds.count();
             }
 
+
+
             negatives += (int) !foundInFilter;
             false_positives += (int) (!foundInTrie && foundInFilter);
             true_negatives += (int) (!foundInFilter && !foundInTrie);

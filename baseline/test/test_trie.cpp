@@ -1,3 +1,4 @@
+#include <fstream>
 #include "gtest/gtest.h"
 #include "Trie.hpp"
 
@@ -13,7 +14,10 @@
 namespace range_filtering {
 namespace trie_test {
 
-class TrieUnitTest : public ::testing::Test {
+    static const std::string kFilePath = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/100k_new/uniform_input.txt";
+    static std::vector<std::string> words;
+
+    class TrieUnitTest : public ::testing::Test {
 public:
     static void findKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive, const std::string& expected_key);
     static void doNotFindKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive);
@@ -99,6 +103,64 @@ public:
         ASSERT_TRUE(trie.lookupRange("fat", true, "so", false));
     }
 
+    TEST_F(TrieUnitTest, otherTrie) {
+        std::vector<std::string> keys = {
+                "f",
+                "far",
+                "fast",
+                "s",
+                "seseseseseseseesesese",
+                "top",
+                "toy",
+                "toyyyyyyyyyy",
+                "trie",
+        };
+        auto trie = Trie(keys);
+
+        ASSERT_TRUE(trie.lookupPrefix("f"));
+        ASSERT_TRUE(trie.lookupPrefix("fa"));
+        ASSERT_FALSE(trie.lookupPrefix("fest"));
+        ASSERT_FALSE(trie.lookupPrefix("faster"));
+        ASSERT_TRUE(trie.lookupPrefix("fast"));
+        ASSERT_TRUE(trie.lookupPrefix("trie"));
+        ASSERT_FALSE(trie.lookupPrefix("tried"));
+        ASSERT_TRUE(trie.lookupPrefix("sesesesesesese"));
+    }
+
+    TEST_F(TrieUnitTest, bigTrie) {
+        std::vector<std::string> keys = {
+                "f",
+                "far",
+                "fast",
+                "s",
+                "seseseseseseseesesese",
+                "top",
+                "toy",
+                "toyyyyyyyyyy",
+                "trie",
+        };
+        auto trie = Trie(keys);
+
+        ASSERT_TRUE(trie.lookupPrefix("f"));
+        ASSERT_TRUE(trie.lookupPrefix("fa"));
+        ASSERT_FALSE(trie.lookupPrefix("fest"));
+        ASSERT_FALSE(trie.lookupPrefix("faster"));
+        ASSERT_TRUE(trie.lookupPrefix("fast"));
+        ASSERT_TRUE(trie.lookupPrefix("trie"));
+        ASSERT_FALSE(trie.lookupPrefix("tried"));
+        ASSERT_TRUE(trie.lookupPrefix("sesesesesesese"));
+    }
+
+    TEST_F(TrieUnitTest, words) {
+        auto trie = Trie(words);
+
+        for (const auto& word : words) {
+            for (size_t i = 0; i < word.size() - 1; i++) {
+                ASSERT_TRUE(trie.lookupPrefix(word.substr(0, i + 1)));
+            }
+        }
+    }
+
     void TrieUnitTest::findKeyGreaterThan(Trie& trie, const std::string& key, bool inclusive, const std::string& expected_key) {
         auto found_key_iter = trie.moveToKeyGreaterThan(key, inclusive);
         ASSERT_TRUE(found_key_iter.isValid());
@@ -124,10 +186,22 @@ public:
         ASSERT_FALSE(key_iter.isValid());
         ASSERT_EQ(key_iter.getKey(), "");
     }
+
+    void loadWordList() {
+        std::ifstream infile(kFilePath);
+        std::string key;
+        int count = 0;
+        while (infile.good()) {
+            infile >> key;
+            words.push_back(key);
+            count++;
+        }
+    }
 }
 }
 
 int main (int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
+    range_filtering::trie_test::loadWordList();
     return RUN_ALL_TESTS();
 }

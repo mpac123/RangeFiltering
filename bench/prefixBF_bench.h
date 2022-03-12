@@ -14,6 +14,7 @@
 #include "BloomedSurfingTrie.h"
 #include "SplashyTrie.h"
 #include "RestrainedSplashyTrie.h"
+#include "../succinct_trie/include/fst.hpp"
 
 namespace prefixBF_bench {
 
@@ -316,6 +317,18 @@ namespace prefixBF_bench {
                 }
             }
         }
+    }
+
+    void runTestsFST(std::vector<std::string> insert_keys, std::vector<std::string> prefixes) {
+        auto trie = range_filtering::Trie(insert_keys);
+        auto start = std::chrono::system_clock::now();
+        auto fst = new range_filtering::FST(insert_keys);
+        auto end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        auto[fpr, query_time] = bench::calculateFPR(fst, trie, prefixes);
+        std::cout << fst->getMemoryUsage() << "\t" << fpr << "\t" << "" << "\t"
+                  << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                  << std::endl;
     }
 
 };

@@ -13,7 +13,7 @@ namespace range_filtering {
                                       uint32_t total_BFs_size,
                                       double maximalLevelPenalty);
         bool lookupKey(const std::string& prefix) const;
-        unsigned long long getMemoryUsage() const;
+        uint64_t getMemoryUsage() const;
 
     private:
         std::vector<bloom_filter::BloomFilter*> bloomFilters_;

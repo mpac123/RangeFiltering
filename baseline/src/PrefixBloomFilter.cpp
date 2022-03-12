@@ -35,6 +35,6 @@ bool range_filtering::PrefixBloomFilter::lookupPrefix(const std::string& prefix)
     return true;
 }
 
-unsigned long long range_filtering::PrefixBloomFilter::getMemoryUsage() const {
+uint64_t range_filtering::PrefixBloomFilter::getMemoryUsage() const {
     return bloomFilter_->getMemoryUsage();
 }

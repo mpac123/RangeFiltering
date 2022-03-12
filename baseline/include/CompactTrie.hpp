@@ -14,7 +14,7 @@ public:
     // Currently, keys must be sorted
     explicit CompactTrie(std::vector<std::string> &keys);
     bool lookupPrefix(const std::string &prefix) override;
-    unsigned long long getMemoryUsage() const override;
+    uint64_t getMemoryUsage() const override;
     std::string getName() const override { return "BlindTrie"; }
 
 protected:

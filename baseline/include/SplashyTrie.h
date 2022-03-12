@@ -14,7 +14,7 @@ namespace range_filtering {
         explicit SplashyTrie(std::vector<std::string> &keys, uint64_t max_suffix_length,
                              double splashiness_coefficient);
         bool lookupPrefix(const std::string &prefix) override;
-        unsigned long long getMemoryUsage() const override;
+        uint64_t getMemoryUsage() const override;
         std::string getName() const override { return "SurfingTrie"; }
 
     protected:
@@ -24,14 +24,14 @@ namespace range_filtering {
 
             TrieNode(SplashyTrie const& trie);
             virtual bool lookupNode(const std::string &key, uint64_t position);
-            virtual unsigned long long getMemoryUsage() const;
+            virtual uint64_t getMemoryUsage() const;
 
         private:
             std::map<char, TrieNode *> children_;
             bool end_of_word_;
             void insertKeys(Trie::TrieNode* current_node);
 
-            unsigned long long getChildrenMemoryUsage() const;
+            uint64_t getChildrenMemoryUsage() const;
 
             friend class SplashyTrie;
         };
@@ -40,7 +40,7 @@ namespace range_filtering {
         protected:
             LeafNode(SplashyTrie const& trie, uint8_t suffix);
             bool lookupNode(const std::string &key, uint64_t position) override;
-            unsigned long long getMemoryUsage() const override;
+            uint64_t getMemoryUsage() const override;
 
             uint8_t suffix_;
 

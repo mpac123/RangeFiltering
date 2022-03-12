@@ -7,13 +7,13 @@ namespace range_filtering {
         children_ = std::map<char, TrieNode*>();
     }
 
-    unsigned long long SplashyTrie::TrieNode::getMemoryUsage() const {
+    uint64_t SplashyTrie::TrieNode::getMemoryUsage() const {
         // char + 64-bit pointer per each child + boolean flag
         uint64_t node_size_bits = (8 + 64) * children_.size() + 1;
         return node_size_bits + getChildrenMemoryUsage();
     }
 
-    unsigned long long SplashyTrie::TrieNode::getChildrenMemoryUsage() const {
+    uint64_t SplashyTrie::TrieNode::getChildrenMemoryUsage() const {
         uint64_t children_size = 0;
         for (auto child : children_) {
             children_size += child.second->getMemoryUsage();
@@ -21,7 +21,7 @@ namespace range_filtering {
         return children_size;
     }
 
-    unsigned long long SplashyTrie::LeafNode::getMemoryUsage() const {
+    uint64_t SplashyTrie::LeafNode::getMemoryUsage() const {
         // This is not entirely true in this implementation as no matter what's the size of suffix,
         // I keep 8bits per suffix, but for the sake of comparison let's assume they're more packed...
         return trie_.max_suffix_length_;
@@ -88,7 +88,7 @@ namespace range_filtering {
         return key_suffix == suffix_;
     }
 
-    unsigned long long SplashyTrie::getMemoryUsage() const {
+    uint64_t SplashyTrie::getMemoryUsage() const {
         auto bytes = (unsigned long long) ((64. + root->getMemoryUsage()) / 8.0);
         return bytes + 1;
     }

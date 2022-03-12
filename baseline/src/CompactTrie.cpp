@@ -195,7 +195,7 @@ namespace range_filtering {
         return false;
     }
 
-    unsigned long long CompactTrie::getMemoryUsage() const {
+    uint64_t CompactTrie::getMemoryUsage() const {
         return sizeof(CompactTrie) + root->getMemoryUsage();
     }
 }

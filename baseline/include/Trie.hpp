@@ -24,7 +24,7 @@ public:
         TrieNode();
         explicit TrieNode(TrieNode* parent);
 
-        unsigned long long getMemoryUsage() const;
+        uint64_t getMemoryUsage() const;
         uint64_t calculateHeight();
         uint64_t calculateChildrenCount();
         void calculateLevel(uint64_t level);
@@ -64,7 +64,7 @@ public:
     Trie::Iter moveToKeyGreaterThan(const std::string& key, const bool inclusive);
     bool lookupRange(const std::string& left_key, const bool left_inclusive,
                      const std::string& right_key, const bool right_inclusive);
-    unsigned long long getMemoryUsage() const override;
+    uint64_t getMemoryUsage() const override;
     std::string getName() const override { return "Trie"; }
 
 private:

@@ -213,7 +213,7 @@ bool Trie::lookupRange(const std::string& left_key, const bool left_inclusive,
     return false;
 }
 
-unsigned long long Trie::TrieNode::getMemoryUsage() const {
+uint64_t Trie::TrieNode::getMemoryUsage() const {
     unsigned long long children_size = 0;
     for (auto child : children) {
         children_size += child.second->getMemoryUsage();
@@ -223,7 +223,7 @@ unsigned long long Trie::TrieNode::getMemoryUsage() const {
     return node_size_bits + children_size;
 }
 
-unsigned long long Trie::getMemoryUsage() const {
+uint64_t Trie::getMemoryUsage() const {
     return sizeof(Trie) + root->getMemoryUsage();
 }
 

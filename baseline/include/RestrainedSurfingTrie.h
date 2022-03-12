@@ -16,7 +16,7 @@ namespace range_filtering {
                                        RestraintType restraint_type, uint64_t absolute_restraint_val,
                                        double relative_restraint_val);
         bool lookupPrefix(const std::string &prefix) override;
-        unsigned long long getMemoryUsage() const override;
+        uint64_t getMemoryUsage() const override;
         std::string getName() const override { return "SurfingTrie"; }
 
     protected:
@@ -26,7 +26,7 @@ namespace range_filtering {
 
             TrieNode(RestrainedSurfingTrie const& trie);
             virtual bool lookupNode(const std::string &key, uint64_t position);
-            virtual unsigned long long getMemoryUsage() const;
+            virtual uint64_t getMemoryUsage() const;
 
         private:
             std::map<char, TrieNode *> children_;
@@ -34,7 +34,7 @@ namespace range_filtering {
             void insertKeys(uint64_t position, std::vector<std::string> &keys);
             void insertChildNode(char current, uint64_t position, std::vector<std::string> &keys);
 
-            unsigned long long getChildrenMemoryUsage() const;
+            uint64_t getChildrenMemoryUsage() const;
 
             friend class RestrainedSurfingTrie;
         };
@@ -43,7 +43,7 @@ namespace range_filtering {
         protected:
             LeafNode(RestrainedSurfingTrie const& trie, uint8_t suffix);
             bool lookupNode(const std::string &key, uint64_t position) override;
-            unsigned long long getMemoryUsage() const override;
+            uint64_t getMemoryUsage() const override;
 
             uint8_t suffix_;
 
