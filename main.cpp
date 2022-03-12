@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "include/Trie.hpp"
-#include "include/CompactTrie.hpp"
+#include "baseline/include/Trie.hpp"
+#include "baseline/include/CompactTrie.hpp"
 
 using namespace range_filtering;
 

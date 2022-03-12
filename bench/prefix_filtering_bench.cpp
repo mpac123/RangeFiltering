@@ -4,20 +4,23 @@
 int main(int argc, char *argv[]) {
     std::string data_type = "uniform";
     std::string query_type = "similar";
-    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/";
+    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/100k_new/";
+
+    std::string data_structure = "fst";
 
     std::tuple<uint32_t, uint32_t, uint32_t> prefixBF_params = {100000, 20000000, 500000};
     std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> prefixQF_params = {21, 21, 1, 8};
 
-    if (argc > 3) {
+    if (argc > 4) {
         data_type = argv[1];
         query_type = argv[2];
         input_dir = argv[3];
+        data_structure = argv[4];
     }
 
-    if (argc > 10) {
-        prefixBF_params = {std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[6])};
-        prefixQF_params = {std::stoi(argv[7]), std::stoi(argv[8]), std::stoi(argv[9]), std::stoi(argv[10])};
+    if (data_structure == "surf" && argc > 11) {
+        prefixBF_params = {std::stoi(argv[5]), std::stoi(argv[6]), std::stoi(argv[7])};
+        prefixQF_params = {std::stoi(argv[8]), std::stoi(argv[9]), std::stoi(argv[10]), std::stoi(argv[11])};
     }
 
     std::string input_filename = input_dir + data_type + "_input.txt";
@@ -34,15 +37,6 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    std::cout << "memoryUsage\tFPR Prefix-BF\tPF Prob BF\tFPR Prefix-QF\tFP Prob QF\tSuRF Real" << std::endl;
-
-    // Run PrefixBF
-    //prefixBF_bench::runTestsPBF(std::get<0>(prefixBF_params), std::get<1>(prefixBF_params), std::get<2>(prefixBF_params), keys, prefixes);
-
-    // Run PrefixQF
-    //prefixBF_bench::runTestsPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params),
-    //        std::get<2>(prefixQF_params), std::get<3>(prefixQF_params), keys, prefixes);
-
-    // Run SuRF Real
-    //prefixBF_bench::runTestsSuRFReal(0, 8, keys, prefixes);
+    std::cout << "Memory usage\tFPR\tSuffix size\tCreation time\tQuery time\tTrie memory usage" << std::endl;
+    prefixBF_bench::runTestsFST(keys, prefixes);
 }
