@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "config.hpp"
-#include "fst_builder.hpp"
+#include "splash_builder.hpp"
 
 namespace range_filtering {
 
@@ -19,7 +19,7 @@ namespace range_filtering {
         static std::vector<std::string> words;
         static std::vector<std::string> words_dup;
 
-        class FSTBuilderUnitTest : public ::testing::Test {
+        class SplashBuilderUnitTest : public ::testing::Test {
         public:
             virtual void SetUp () {
                 truncateSuffixes(words, words_trunc_);
@@ -42,7 +42,7 @@ namespace range_filtering {
             void printDenseNode(level_t level, position_t node_num);
             void printSparseNode(level_t level, position_t pos);
 
-            FSTBuilder *builder_;
+            SplashBuilder *builder_;
             std::vector<std::string> words_trunc_;
             std::vector<std::string> ints_;
             std::vector<std::string> ints_trunc_;
@@ -61,7 +61,7 @@ namespace range_filtering {
             return a;
         }
 
-        void FSTBuilderUnitTest::truncateSuffixes(const std::vector<std::string> &keys, std::vector<std::string> &keys_trunc) {
+        void SplashBuilderUnitTest::truncateSuffixes(const std::vector<std::string> &keys, std::vector<std::string> &keys_trunc) {
             assert(keys.size() > 1);
 
             int commonPrefixLen = 0;
@@ -84,7 +84,7 @@ namespace range_filtering {
             }
         }
 
-        void FSTBuilderUnitTest::fillinInts() {
+        void SplashBuilderUnitTest::fillinInts() {
             for (uint64_t i = 0; i < kIntTestSize; i += 10) {
                 ints_.push_back(uint64ToString(i));
             }
@@ -96,14 +96,14 @@ namespace range_filtering {
                 std::cout << "\t";
         }
 
-        void FSTBuilderUnitTest::printDenseNode(level_t level, position_t node_num) {
+        void SplashBuilderUnitTest::printDenseNode(level_t level, position_t node_num) {
             printIndent(level);
             std::cout << "level = " << level << "\tnode_num = " << node_num << "\n";
 
             // print labels
             printIndent(level);
             for (position_t i = 0; i < kFanout; i++) {
-                if (FSTBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + i)) {
+                if (SplashBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + i)) {
                     if ((i >= 65 && i <= 90) || (i >= 97 && i <= 122))
                         std::cout << (char)i << " ";
                     else
@@ -115,8 +115,8 @@ namespace range_filtering {
             // print child indicator bitmap
             printIndent(level);
             for (position_t i = 0; i < kFanout; i++) {
-                if (FSTBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + i)) {
-                    if (FSTBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + i))
+                if (SplashBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + i)) {
+                    if (SplashBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + i))
                         std::cout << "1 ";
                     else
                         std::cout << "0 ";
@@ -126,14 +126,14 @@ namespace range_filtering {
 
             // print prefixkey indicator
             printIndent(level);
-            if (FSTBuilder::readBit(builder_->getPrefixkeyIndicatorBits()[level], node_num))
+            if (SplashBuilder::readBit(builder_->getPrefixkeyIndicatorBits()[level], node_num))
                 std::cout << "1 ";
             else
                 std::cout << "0 ";
             std::cout << "\n";
         }
 
-        void FSTBuilderUnitTest::printSparseNode(level_t level, position_t pos) {
+        void SplashBuilderUnitTest::printSparseNode(level_t level, position_t pos) {
             printIndent(level);
             std::cout << "level = " << level << "\tpos = " << pos << "\n";
 
@@ -149,7 +149,7 @@ namespace range_filtering {
                 else
                     std::cout << (int16_t)label << " ";
                 pos++;
-                is_end_of_node = FSTBuilder::readBit(builder_->getLoudsBits()[level], pos);
+                is_end_of_node = SplashBuilder::readBit(builder_->getLoudsBits()[level], pos);
             }
             std::cout << "\n";
 
@@ -158,13 +158,13 @@ namespace range_filtering {
             is_end_of_node = false;
             pos = start_pos;
             while (!is_end_of_node && pos < builder_->getLabels()[level].size()) {
-                bool has_child = FSTBuilder::readBit(builder_->getChildIndicatorBits()[level], pos);
+                bool has_child = SplashBuilder::readBit(builder_->getChildIndicatorBits()[level], pos);
                 if (has_child)
                     std::cout << "1 ";
                 else
                     std::cout << "0 ";
                 pos++;
-                is_end_of_node = FSTBuilder::readBit(builder_->getLoudsBits()[level], pos);
+                is_end_of_node = SplashBuilder::readBit(builder_->getLoudsBits()[level], pos);
             }
             std::cout << "\n";
 
@@ -173,18 +173,18 @@ namespace range_filtering {
             is_end_of_node = false;
             pos = start_pos;
             while (!is_end_of_node && pos < builder_->getLabels()[level].size()) {
-                bool louds_bit = FSTBuilder::readBit(builder_->getLoudsBits()[level], pos);
+                bool louds_bit = SplashBuilder::readBit(builder_->getLoudsBits()[level], pos);
                 if (louds_bit)
                     std::cout << "1 ";
                 else
                     std::cout << "0 ";
                 pos++;
-                is_end_of_node = FSTBuilder::readBit(builder_->getLoudsBits()[level], pos);
+                is_end_of_node = SplashBuilder::readBit(builder_->getLoudsBits()[level], pos);
             }
             std::cout << "\n";
         }
 
-        bool FSTBuilderUnitTest::DoesPrefixMatchInTrunc(const std::vector<std::string> &keys_trunc, int i, int j, int len) {
+        bool SplashBuilderUnitTest::DoesPrefixMatchInTrunc(const std::vector<std::string> &keys_trunc, int i, int j, int len) {
             if (i < 0 || i >= (int)keys_trunc.size()) return false;
             if (j < 0 || j >= (int)keys_trunc.size()) return false;
             if (len <= 0) return true;
@@ -195,7 +195,7 @@ namespace range_filtering {
             return false;
         }
 
-        void FSTBuilderUnitTest::testSparse(const std::vector<std::string> &keys,
+        void SplashBuilderUnitTest::testSparse(const std::vector<std::string> &keys,
                                              const std::vector<std::string> &keys_trunc) {
             for (level_t level = 0; level < builder_->getTreeHeight(); level++) {
                 position_t pos = 0; pos--;
@@ -213,14 +213,14 @@ namespace range_filtering {
 //                    ASSERT_TRUE(exist_in_node);
 
                     // child indicator test
-                    bool has_child = FSTBuilder::readBit(builder_->getChildIndicatorBits()[level], pos);
+                    bool has_child = SplashBuilder::readBit(builder_->getChildIndicatorBits()[level], pos);
                     bool same_prefix_in_prev_key = DoesPrefixMatchInTrunc(keys_trunc, i-1, i, level+1);
                     bool same_prefix_in_next_key = DoesPrefixMatchInTrunc(keys_trunc, i, i+1, level+1);
                     bool expected_has_child = same_prefix_in_prev_key || same_prefix_in_next_key || keys[i].length() - 1 > level;
                     ASSERT_EQ(expected_has_child, has_child);
 
                     // LOUDS bit test
-                    bool louds_bit = FSTBuilder::readBit(builder_->getLoudsBits()[level], pos);
+                    bool louds_bit = SplashBuilder::readBit(builder_->getLoudsBits()[level], pos);
                     bool expected_louds_bit = !DoesPrefixMatchInTrunc(keys, i-1, i, level);
                     if (pos == 0)
                         ASSERT_TRUE(louds_bit);
@@ -230,24 +230,24 @@ namespace range_filtering {
             }
         }
 
-        void FSTBuilderUnitTest::testDense() {
+        void SplashBuilderUnitTest::testDense() {
             for (level_t level = 0; level < builder_->getSparseStartLevel(); level++) {
                 int node_num = -1;
 
                 label_t prev_label = 0;
                 for (unsigned i = 0; i < builder_->getLabels()[level].size(); i++) {
-                    bool is_node_start = FSTBuilder::readBit(builder_->getLoudsBits()[level], i);
+                    bool is_node_start = SplashBuilder::readBit(builder_->getLoudsBits()[level], i);
                     if (is_node_start)
                         node_num++;
 
                     label_t label = builder_->getLabels()[level][i];
-                    bool exist_in_node = FSTBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + label);
-                    bool has_child_sparse = FSTBuilder::readBit(builder_->getChildIndicatorBits()[level], i);
-                    bool has_child_dense = FSTBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + label);
+                    bool exist_in_node = SplashBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + label);
+                    bool has_child_sparse = SplashBuilder::readBit(builder_->getChildIndicatorBits()[level], i);
+                    bool has_child_dense = SplashBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + label);
 
                     // prefixkey indicator test
                     if (is_node_start) {
-                        bool prefixkey_indicator = FSTBuilder::readBit(builder_->getPrefixkeyIndicatorBits()[level], node_num);
+                        bool prefixkey_indicator = SplashBuilder::readBit(builder_->getPrefixkeyIndicatorBits()[level], node_num);
                         if ((label == kTerminator) && !has_child_sparse)
                             ASSERT_TRUE(prefixkey_indicator);
                         else
@@ -266,23 +266,23 @@ namespace range_filtering {
                     if (is_node_start) {
                         if (node_num > 0) {
                             for (unsigned c = prev_label + 1; c < kFanout; c++) {
-                                exist_in_node = FSTBuilder::readBit(builder_->getBitmapLabels()[level], (node_num - 1) * kFanout + c);
+                                exist_in_node = SplashBuilder::readBit(builder_->getBitmapLabels()[level], (node_num - 1) * kFanout + c);
                                 ASSERT_FALSE(exist_in_node);
-                                has_child_dense = FSTBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], (node_num - 1) * kFanout + c);
+                                has_child_dense = SplashBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], (node_num - 1) * kFanout + c);
                                 ASSERT_FALSE(has_child_dense);
                             }
                         }
                         for (unsigned c = 0; c < (unsigned)label; c++) {
-                            exist_in_node = FSTBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + c);
+                            exist_in_node = SplashBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + c);
                             ASSERT_FALSE(exist_in_node);
-                            has_child_dense = FSTBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + c);
+                            has_child_dense = SplashBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + c);
                             ASSERT_FALSE(has_child_dense);
                         }
                     } else {
                         for (unsigned c = prev_label + 1; c < (unsigned)label; c++) {
-                            exist_in_node = FSTBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + c);
+                            exist_in_node = SplashBuilder::readBit(builder_->getBitmapLabels()[level], node_num * kFanout + c);
                             ASSERT_FALSE(exist_in_node);
-                            has_child_dense = FSTBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + c);
+                            has_child_dense = SplashBuilder::readBit(builder_->getBitmapChildIndicatorBits()[level], node_num * kFanout + c);
                             ASSERT_FALSE(has_child_dense);
                         }
                     }
@@ -291,46 +291,46 @@ namespace range_filtering {
             }
         }
 
-//        TEST_F (FSTBuilderUnitTest, buildSparseStringTest) {
+//        TEST_F (SplashBuilderUnitTest, buildSparseStringTest) {
 //            bool include_dense = false;
 //            uint32_t sparse_dense_ratio = 0;
-//            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+//            builder_ = new SplashBuilder(include_dense, sparse_dense_ratio, SplashRestraintType::none, 0, 0, 1);
 //            builder_->build(words);
 //            testSparse(words, words_trunc_);
 //            delete builder_;
 //        }
 //
-//        TEST_F (FSTBuilderUnitTest, buildSparseDuplicateTest) {
+//        TEST_F (SplashBuilderUnitTest, buildSparseDuplicateTest) {
 //            bool include_dense = false;
 //            uint32_t sparse_dense_ratio = 0;
-//            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+//            builder_ = new SplashBuilder(include_dense, sparse_dense_ratio, SplashRestraintType::none, 0, 0, 1);
 //            builder_->build(words_dup);
 //            testSparse(words, words_trunc_);
 //            delete builder_;
 //        }
 
-        TEST_F (FSTBuilderUnitTest, buildSparseIntTest) {
+        TEST_F (SplashBuilderUnitTest, buildSparseIntTest) {
             bool include_dense = false;
             uint32_t sparse_dense_ratio = 0;
-            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+            builder_ = new SplashBuilder(include_dense, sparse_dense_ratio, SplashRestraintType::none, 0, 0, 1);
             builder_->build(ints_);
             testSparse(ints_, ints_trunc_);
             delete builder_;
         }
 
-        TEST_F (FSTBuilderUnitTest, buildDenseStringTest) {
+        TEST_F (SplashBuilderUnitTest, buildDenseStringTest) {
             bool include_dense = true;
             uint32_t sparse_dense_ratio = 0;
-            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+            builder_ = new SplashBuilder(include_dense, sparse_dense_ratio, SplashRestraintType::none, 0, 0, 1);
             builder_->build(words);
             testDense();
             delete builder_;
         }
 
-        TEST_F (FSTBuilderUnitTest, buildDenseIntTest) {
+        TEST_F (SplashBuilderUnitTest, buildDenseIntTest) {
             bool include_dense = true;
             uint32_t sparse_dense_ratio = 0;
-            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+            builder_ = new SplashBuilder(include_dense, sparse_dense_ratio, SplashRestraintType::none, 0, 0, 1);
             builder_->build(ints_);
             testDense();
             delete builder_;

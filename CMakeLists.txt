@@ -28,6 +28,7 @@ add_subdirectory(external/SuRF)
 add_subdirectory(basic_filters)
 add_subdirectory(external/quotient-filter)
 add_subdirectory(succinct_trie)
+add_subdirectory(splash)
 
 add_executable(main main.cpp)
 target_link_libraries(main TRIE)
