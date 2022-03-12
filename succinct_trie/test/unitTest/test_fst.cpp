@@ -537,6 +537,7 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupPrefix("d"));
             ASSERT_FALSE(trie.lookupPrefix("ca"));
             ASSERT_FALSE(trie.lookupPrefix("ea"));
+            ASSERT_FALSE(trie.lookupPrefix("e"));
             ASSERT_FALSE(trie.lookupPrefix("fi"));
 
             ASSERT_FALSE(trie.lookupPrefix("e"));
@@ -549,6 +550,25 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupPrefix("tried"));
             ASSERT_TRUE(trie.lookupPrefix("sesesesesesese"));
             ASSERT_FALSE(trie.lookupPrefix("topless"));
+        }
+
+        TEST_F(FSTUnitTest, range) {
+            std::vector<std::string> keys = {
+                    "f",
+                    "far",
+                    "fast",
+                    "s",
+                    "seseseseseseseesesese",
+                    "top",
+                    "toy",
+                    "toyyyyyyyyyy",
+                    "trie",
+            };
+            auto trie = FST(keys);
+
+            //ASSERT_FALSE(trie.lookupRange("a", true, "a0", true));
+            //ASSERT_FALSE(trie.lookupRange("e", true, "ea", false));
+
         }
 
         void loadWordList() {

@@ -57,7 +57,7 @@ namespace range_filtering {
         // Input keys must be SORTED
         //------------------------------------------------------------------
         FST(const std::vector<std::string>& keys) {
-            create(keys, kIncludeDense, kSparseDenseRatio);
+            create(keys, false, kSparseDenseRatio);
         }
 
         FST(const std::vector<std::string>& keys,
@@ -283,10 +283,15 @@ namespace range_filtering {
     }
 
     bool FST::lookupPrefix(const std::string &prefix) {
-        char last_char = prefix[prefix.length() - 1];
-        std::string right_key = prefix;
-        right_key[prefix.length() - 1] = last_char + 1;
-        return lookupRange(prefix, true, right_key, false);
+        if (louds_dense_->getHeight() == 0) {
+            return louds_sparse_->lookupPrefix(prefix, 0);
+        }
+        position_t connect_node_num = 0;
+        if (!louds_dense_->lookupPrefix(prefix, connect_node_num))
+            return false;
+        else if (connect_node_num != 0)
+            return louds_sparse_->lookupPrefix(prefix, connect_node_num);
+        return true;
     }
 
 //============================================================================

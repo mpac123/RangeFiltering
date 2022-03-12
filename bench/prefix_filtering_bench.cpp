@@ -38,16 +38,5 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Memory usage\tFPR\tSuffix size\tCreation time\tQuery time\tTrie memory usage" << std::endl;
-
-    // Run PrefixBF
-    //prefixBF_bench::runTestsPBF(std::get<0>(prefixBF_params), std::get<1>(prefixBF_params), std::get<2>(prefixBF_params), keys, prefixes);
-
-    // Run PrefixQF
-    //prefixBF_bench::runTestsPQF(std::get<0>(prefixQF_params), std::get<1>(prefixQF_params),
-    //        std::get<2>(prefixQF_params), std::get<3>(prefixQF_params), keys, prefixes);
-
-    // Run SuRF Real
-    //prefixBF_bench::runTestsSuRFReal(0, 8, keys, prefixes);
-
     prefixBF_bench::runTestsFST(keys, prefixes);
 }

@@ -326,7 +326,7 @@ namespace prefixBF_bench {
         auto end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
         auto[fpr, query_time] = bench::calculateFPR(fst, trie, prefixes);
-        std::cout << fst->getMemoryUsage() << "\t" << fpr << "\t" << "" << "\t"
+        std::cout << fst->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
                   << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
                   << std::endl;
     }

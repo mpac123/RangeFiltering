@@ -72,6 +72,7 @@ namespace range_filtering {
         // point query: trie walk starts at node "in_node_num" instead of root
         // in_node_num is provided by louds-dense's lookupKey function
         bool lookupKey(const std::string& key, const position_t in_node_num) const;
+        bool lookupPrefix(const std::string& key, const position_t in_node_num) const;
         // return value indicates potential false positive
         bool moveToKeyGreaterThan(const std::string& key,
                                   const bool inclusive, LoudsSparse::Iter& iter) const;
@@ -235,6 +236,28 @@ namespace range_filtering {
         if ((labels_->read(pos) == kTerminator) && (!child_indicator_bits_->readBit(pos)))
             return suffixes_->checkEquality(getSuffixPos(pos), key, level + 1);
         return false;
+    }
+
+    bool LoudsSparse::lookupPrefix(const std::string& key, const position_t in_node_num) const {
+        position_t node_num = in_node_num;
+        position_t pos = getFirstLabelPos(node_num);
+        level_t level = 0;
+        for (level = start_level_; level < key.length(); level++) {
+            //child_indicator_bits_->prefetch(pos);
+            if (!labels_->search((label_t)key[level], pos, nodeSize(pos)))
+                return false;
+
+            // if trie branch terminates
+            if (!child_indicator_bits_->readBit(pos))
+                return level == key.length() - 1;
+                // TODO: when implementing approximate trie, this will be needed again
+                //return suffixes_->checkEquality(getSuffixPos(pos), key, level + 1);
+            // move to child
+            node_num = getChildNodeNum(pos);
+            pos = getFirstLabelPos(node_num);
+        }
+        //return suffixes_->checkEquality(getSuffixPos(pos), key, level + 1);
+        return true;
     }
 
     bool LoudsSparse::moveToKeyGreaterThan(const std::string& key,

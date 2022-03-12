@@ -91,6 +91,7 @@ namespace range_filtering {
         // Returns whether key exists in the trie so far
         // out_node_num == 0 means search terminates in louds-dense.
         bool lookupKey(const std::string& key, position_t& out_node_num) const;
+        bool lookupPrefix(const std::string& key, position_t& out_node_num) const;
         // return value indicates potential false positive
         bool moveToKeyGreaterThan(const std::string& key,
                                   const bool inclusive, LoudsDense::Iter& iter) const;
@@ -201,6 +202,31 @@ namespace range_filtering {
                     return suffixes_->checkEquality(getSuffixPos(pos, true), key, level + 1);
                 else
                     return false;
+            }
+            pos += (label_t)key[level];
+
+            //child_indicator_bitmaps_->prefetch(pos);
+
+            if (!label_bitmaps_->readBit(pos)) //if key byte does not exist
+                return false;
+
+            if (!child_indicator_bitmaps_->readBit(pos)) //if trie branch terminates
+                return suffixes_->checkEquality(getSuffixPos(pos, false), key, level + 1);
+
+            node_num = getChildNodeNum(pos);
+        }
+        //search will continue in LoudsSparse
+        out_node_num = node_num;
+        return true;
+    }
+
+    bool LoudsDense::lookupPrefix(const std::string& key, position_t& out_node_num) const {
+        position_t node_num = 0;
+        position_t pos = 0;
+        for (level_t level = 0; level < height_; level++) {
+            pos = (node_num * kNodeFanout);
+            if (level >= key.length()) { //if run out of searchKey bytes
+                return suffixes_->checkEquality(getSuffixPos(pos, true), key, level + 1);
             }
             pos += (label_t)key[level];
 
