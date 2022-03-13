@@ -6,7 +6,7 @@
 #include <vector>
 #include <cassert>
 
-namespace range_filtering {
+namespace range_filtering_splash {
     class SplashBuilder {
     public:
         SplashBuilder() : sparse_start_level_(0) {};
@@ -95,7 +95,7 @@ namespace range_filtering {
 
         // Fill in the LOUDS-Sparse vectors through a single scan
         // of the sorted key list.
-        void buildSparse(const std::vector<std::string>& keys, Trie &trie);
+        void buildSparse(const std::vector<std::string>& keys, range_filtering::Trie &trie);
 
         // Walks down the current partially-filled trie by comparing key to
         // its previous key in the list until their prefixes do not match.
@@ -111,7 +111,7 @@ namespace range_filtering {
         // This function is called after skipCommonPrefix. Therefore, it
         // guarantees that the stored prefix of key is unique in the trie.
         level_t insertKeyBytesToTrie(const std::string& key, const std::string& next_key,
-                                     const level_t start_level, Trie::TrieNode* node);
+                                     const level_t start_level, range_filtering::Trie::TrieNode* node);
 
         // Fills in the suffix byte for key
 
@@ -142,8 +142,8 @@ namespace range_filtering {
         bool isStartOfNode(const level_t level, const position_t pos) const;
         bool isTerminator(const level_t level, const position_t pos) const;
 
-        bool cutOffNode(Trie::TrieNode* node);
-        bool isRestrained(Trie::TrieNode* node) const;
+        bool cutOffNode(range_filtering::Trie::TrieNode* node);
+        bool isRestrained(range_filtering::Trie::TrieNode* node) const;
 
     private:
         // trie level < sparse_start_level_: LOUDS-Dense
@@ -175,11 +175,13 @@ namespace range_filtering {
         // auxiliary per level bookkeeping vectors
         std::vector<position_t> node_counts_;
         std::vector<bool> is_last_item_terminator_;
+
+        std::string last_inserted_ = "";
     };
 
     void SplashBuilder::build(const std::vector<std::string>& keys) {
         assert(keys.size() > 0);
-        auto trie = Trie(keys);
+        auto trie = range_filtering::Trie(keys);
         buildSparse(keys, trie);
         if (include_dense_) {
             determineCutoffLevel();
@@ -187,9 +189,10 @@ namespace range_filtering {
         }
     }
 
-    void SplashBuilder::buildSparse(const std::vector<std::string>& keys, Trie &trie) {
+    void SplashBuilder::buildSparse(const std::vector<std::string>& keys, range_filtering::Trie &trie) {
         for (position_t i = 0; i < keys.size(); i++) {
-            level_t level = skipCommonPrefix(keys[i]);
+            level_t level = 0;
+            if (i > 0) level = skipCommonPrefix(keys[i]);
 
             // find the node in Trie
             auto current_node = trie.root;
@@ -209,7 +212,7 @@ namespace range_filtering {
 
     level_t SplashBuilder::skipCommonPrefix(const std::string& key) {
         level_t level = 0;
-        while (level < key.length() && isCharCommonPrefix((label_t)key[level], level)) {
+        while (level < key.length() && level < last_inserted_.length() && key[level] == last_inserted_[level]) {
             setBit(child_indicator_bits_[level], getNumItems(level) - 1);
             level++;
         }
@@ -217,9 +220,10 @@ namespace range_filtering {
     }
 
     level_t SplashBuilder::insertKeyBytesToTrie(const std::string& key, const std::string& next_key,
-                                                const level_t start_level, Trie::TrieNode* node) {
+                                                const level_t start_level, range_filtering::Trie::TrieNode* node) {
         assert(start_level < key.length());
 
+        last_inserted_ = last_inserted_.substr(0, start_level);
         level_t level = start_level;
         bool is_start_of_node = false;
         bool is_term = false;
@@ -230,6 +234,7 @@ namespace range_filtering {
         // After skipping the common prefix, the first following byte
         // shoud be in an the node as the previous key.
         insertKeyByte(key[level], level, is_start_of_node, is_term);
+        last_inserted_ += key[level];
         node = node->children[key[level]];
         level++;
         if (!isSameKey(key.substr(0, level), next_key.substr(0, level)) && level == key.length()) {
@@ -247,6 +252,7 @@ namespace range_filtering {
         while (level < key.length() && !cutOffNode(node)) {
 
             insertKeyByte(key[level], level, is_start_of_node, is_term);
+            last_inserted_ += key[level];
             node = node->children[key[level]];
             level++;
         }
@@ -445,13 +451,13 @@ namespace range_filtering {
         return ((label == kTerminator) && !readBit(child_indicator_bits_[level], pos));
     }
 
-    bool SplashBuilder::cutOffNode(Trie::TrieNode* node) {
+    bool SplashBuilder::cutOffNode(range_filtering::Trie::TrieNode* node) {
         if (restraintType_ == SplashRestraintType::none) return false;
         double cutoffLevel = (double) node->height_ / (double) node->children_count_;
         return cutoffLevel >= cutOffCoefficient_ && node->children.size() == 1 && !isRestrained(node);
     }
 
-    bool SplashBuilder::isRestrained(Trie::TrieNode* current_node) const {
+    bool SplashBuilder::isRestrained(range_filtering::Trie::TrieNode* current_node) const {
         // node is restrained === we cannot cut off the node
         if (restraintType_ == SplashRestraintType::absolute) {
             return current_node->height_ > absoluteRestraintValue_;

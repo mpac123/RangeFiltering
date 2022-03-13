@@ -12,7 +12,7 @@
 
 #include <vector>
 
-namespace range_filtering {
+namespace range_filtering_splash {
     class LoudsDense {
     public:
         class Iter {

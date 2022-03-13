@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstring>
 
-namespace range_filtering {
+namespace range_filtering_splash {
 
     enum SplashRestraintType { none, absolute, relative, base };
 

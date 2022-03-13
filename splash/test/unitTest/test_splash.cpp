@@ -9,7 +9,7 @@
 #include "config.hpp"
 #include "splash.hpp"
 
-namespace range_filtering {
+namespace range_filtering_splash {
 
     namespace fsttest {
 
@@ -750,6 +750,6 @@ namespace range_filtering {
 
 int main (int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    range_filtering::fsttest::loadWordList();
+    range_filtering_splash::fsttest::loadWordList();
     return RUN_ALL_TESTS();
 }

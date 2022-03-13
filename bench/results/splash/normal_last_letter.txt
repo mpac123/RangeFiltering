@@ -1,0 +1,13 @@
+,Memory usage,Splash y=0.7,Splash y=0.8,Splash y=0.9,Splash y=1.0,SuRF Real,Bloom Filter z=0.5,FST
+0,"prefix_filtering_bench: /home/mapac/Coding/RangeFiltering/bench/bench.h:134: std::tuple<double, double> bench::calculateFPR(range_filtering::PrefixFilter*, range_filtering::Trie&, std::vector<std::__cxx11::basic_string<char> >&): Assertion `negatives == true_negatives' failed.",,,,,,,
+0,"prefix_filtering_bench: /home/mapac/Coding/RangeFiltering/bench/bench.h:134: std::tuple<double, double> bench::calculateFPR(range_filtering::PrefixFilter*, range_filtering::Trie&, std::vector<std::__cxx11::basic_string<char> >&): Assertion `negatives == true_negatives' failed.",,,,,,,
+0,"prefix_filtering_bench: /home/mapac/Coding/RangeFiltering/bench/bench.h:134: std::tuple<double, double> bench::calculateFPR(range_filtering::PrefixFilter*, range_filtering::Trie&, std::vector<std::__cxx11::basic_string<char> >&): Assertion `negatives == true_negatives' failed.",,,,,,,
+0,"prefix_filtering_bench: /home/mapac/Coding/RangeFiltering/bench/bench.h:134: std::tuple<double, double> bench::calculateFPR(range_filtering::PrefixFilter*, range_filtering::Trie&, std::vector<std::__cxx11::basic_string<char> >&): Assertion `negatives == true_negatives' failed.",,,,,,,
+0,221111,,,,,0.662957,,
+0,937783,,,,,,0.00362364,
+1,5626322,,,,,,0.0,
+2,10314862,,,,,,0.0,
+3,15003400,,,,,,0.0,
+4,19691940,,,,,,0.0,
+5,24380478,,,,,,1.12535e-05,
+0,869532,,,,,,,0.0

@@ -10,9 +10,9 @@
 #include "splash_builder.hpp"
 #include "PrefixFilter.h"
 
-namespace range_filtering {
+namespace range_filtering_splash {
 
-    class Splash : public PrefixFilter {
+    class Splash : public range_filtering::PrefixFilter {
     public:
         class Iter {
         public:

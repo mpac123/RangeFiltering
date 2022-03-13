@@ -9,7 +9,7 @@
 #include "config.hpp"
 #include "splash_builder.hpp"
 
-namespace range_filtering {
+namespace range_filtering_splash {
 
     namespace buildertest {
 
@@ -355,6 +355,6 @@ namespace range_filtering {
 
 int main (int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    range_filtering::buildertest::loadWordList();
+    range_filtering_splash::buildertest::loadWordList();
     return RUN_ALL_TESTS();
 }
