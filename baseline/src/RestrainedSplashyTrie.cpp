@@ -31,7 +31,7 @@ namespace range_filtering {
         suffix_ = suffix;
     }
 
-    RestrainedSplashyTrie::RestrainedSplashyTrie(std::vector<std::string> &keys, uint64_t max_suffix_length,
+    RestrainedSplashyTrie::RestrainedSplashyTrie(const std::vector<std::string> &keys, uint64_t max_suffix_length,
                                                  double splashiness_coefficient, RestraintType restraintType,
                                                  uint64_t absolute_restraint_val, double relative_restraint_val) {
         root = new TrieNode(*this);

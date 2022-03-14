@@ -6,16 +6,16 @@ int main(int argc, char *argv[]) {
     std::string query_type = "last_letter";
     std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/100k_new/";
 
-    std::string data_structure = "fst";
+    std::string data_structure = "splash";
     range_filtering_splash::SplashRestraintType restraintType = range_filtering_splash::SplashRestraintType::relative;
 
-    double cutoff_min = 0.7;
-    double cutoff_max = 0.7;
+    double cutoff_min = 1.0;
+    double cutoff_max = 1.0;
     double cutoff_interval = 0.05;
     uint64_t absolute_restraint_value_min = 0;
     uint64_t absolute_restraint_value_max = 0;
     uint64_t absolute_restraint_interval = 1.0;
-    double relative_restraint_value_min = 0.5;
+    double relative_restraint_value_min = 1.0;
     double relative_restraint_value_max = 1.0;
     double relative_restraint_interval = 0.05;
 

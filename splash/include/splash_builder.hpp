@@ -3,6 +3,7 @@
 
 #include "config.hpp"
 #include "../../baseline/include/Trie.hpp"
+#include "RestrainedSplashyTrie.h"
 #include <vector>
 #include <cassert>
 
@@ -145,6 +146,9 @@ namespace range_filtering_splash {
         bool cutOffNode(range_filtering::Trie::TrieNode* node);
         bool isRestrained(range_filtering::Trie::TrieNode* node) const;
 
+        void traverseNode(range_filtering::RestrainedSplashyTrie::TrieNode* node, std::vector<std::string>& keys, std::string& prefix);
+        void generateKeys(range_filtering::RestrainedSplashyTrie trie, std::vector<std::string>& keys);
+
     private:
         // trie level < sparse_start_level_: LOUDS-Dense
         // trie level >= sparse_start_level_: LOUDS-Sparse
@@ -182,10 +186,44 @@ namespace range_filtering_splash {
     void SplashBuilder::build(const std::vector<std::string>& keys) {
         assert(keys.size() > 0);
         auto trie = range_filtering::Trie(keys);
-        buildSparse(keys, trie);
+        if (restraintType_ == SplashRestraintType::relative) {
+            auto restrained_trie = range_filtering::RestrainedSplashyTrie(keys, 0,
+                                                                          cutOffCoefficient_,
+                                                                          range_filtering::RestraintType::relative,
+                                                                          0, relativeRestraintValue_);
+            std::vector<std::string> new_keys;
+            generateKeys(restrained_trie, new_keys);
+            buildSparse(new_keys, trie);
+        } else if (restraintType_ == SplashRestraintType::absolute) {
+            auto restrained_trie = range_filtering::RestrainedSplashyTrie(keys, 0,
+                                                                          cutOffCoefficient_,
+                                                                          range_filtering::RestraintType::absolute,
+                                                                          absoluteRestraintValue_, 0);
+            std::vector<std::string> new_keys;
+            generateKeys(restrained_trie, new_keys);
+            buildSparse(new_keys, trie);
+        } else {
+            buildSparse(keys, trie);
+        }
         if (include_dense_) {
             determineCutoffLevel();
             buildDense();
+        }
+    }
+
+    void SplashBuilder::generateKeys(range_filtering::RestrainedSplashyTrie trie, std::vector<std::string>& keys) {
+        keys = std::vector<std::string>();
+        std::string new_string = "";
+        traverseNode(trie.root, keys, new_string);
+    }
+
+    void SplashBuilder::traverseNode(range_filtering::RestrainedSplashyTrie::TrieNode* node, std::vector<std::string>& keys, std::string& prefix) {
+        if (node->children_.empty()) {
+            keys.push_back(prefix);
+        }
+        for (auto child : node->children_) {
+            auto new_prefix = prefix + child.first;
+            traverseNode(child.second, keys, new_prefix);
         }
     }
 
@@ -212,7 +250,7 @@ namespace range_filtering_splash {
 
     level_t SplashBuilder::skipCommonPrefix(const std::string& key) {
         level_t level = 0;
-        while (level < key.length() && level < last_inserted_.length() && key[level] == last_inserted_[level]) {
+        while (level < key.length() && isCharCommonPrefix((label_t)key[level], level)) {
             setBit(child_indicator_bits_[level], getNumItems(level) - 1);
             level++;
         }
@@ -223,7 +261,6 @@ namespace range_filtering_splash {
                                                 const level_t start_level, range_filtering::Trie::TrieNode* node) {
         assert(start_level < key.length());
 
-        last_inserted_ = last_inserted_.substr(0, start_level);
         level_t level = start_level;
         bool is_start_of_node = false;
         bool is_term = false;
@@ -234,8 +271,6 @@ namespace range_filtering_splash {
         // After skipping the common prefix, the first following byte
         // shoud be in an the node as the previous key.
         insertKeyByte(key[level], level, is_start_of_node, is_term);
-        last_inserted_ += key[level];
-        node = node->children[key[level]];
         level++;
         if (!isSameKey(key.substr(0, level), next_key.substr(0, level)) && level == key.length()) {
             return level;
@@ -243,39 +278,25 @@ namespace range_filtering_splash {
 
         // All the following bytes inserted must be the start of a
         // new node.
-//        while (isSameKey(key.substr(0, level), next_key.substr(0, level)) && level < key.length() && level < next_key.length() && key[level] == next_key[level]) {
-//            is_start_of_node = true;
-//            insertKeyByte(key[level], level, is_start_of_node, is_term);
-//            level++;
-//        }
         is_start_of_node = true;
-        while (level < key.length() && !cutOffNode(node)) {
-
+        while (isSameKey(key.substr(0, level), next_key.substr(0, level)) && level < key.length() && level < next_key.length() && key[level] == next_key[level]) {
             insertKeyByte(key[level], level, is_start_of_node, is_term);
-            last_inserted_ += key[level];
-            node = node->children[key[level]];
-            level++;
-        }
-
-        if (level == key.length() && isSameKey(key.substr(0, level), next_key.substr(0, level))) {
-            is_term = true;
-            insertKeyByte(kTerminator, level, is_start_of_node, is_term);
             level++;
         }
 
         // The last byte inserted makes key unique in the trie.
-//        if (level < key.length()) {
-//            // Store all the nodes till the end of the word
-//            while (level < key.length()) {
-//                is_start_of_node = true;
-//                insertKeyByte(key[level], level, is_start_of_node, is_term);
-//                level++;
-//            }
-//        } else {
-//            is_term = true;
-//            insertKeyByte(kTerminator, level, is_start_of_node, is_term);
-//            level++;
-//        }
+        if (level < key.length()) {
+            // Store all the nodes till the end of the word
+            while (level < key.length()) {
+                is_start_of_node = true;
+                insertKeyByte(key[level], level, is_start_of_node, is_term);
+                level++;
+            }
+        } else {
+            is_term = true;
+            insertKeyByte(kTerminator, level, is_start_of_node, is_term);
+            level++;
+        }
 
         return level;
     }

@@ -338,7 +338,7 @@ namespace prefixBF_bench {
                             double restraint_min, double restraint_max, double restraint_interval) {
         auto trie = range_filtering::Trie(insert_keys);
         for (auto cutoff = cutoff_min; cutoff <= cutoff_max; cutoff += cutoff_interval) {
-            for (auto restraint = restraint_min; restraint < restraint_max; restraint += restraint_interval) {
+            for (auto restraint = restraint_min; restraint <= restraint_max; restraint += restraint_interval) {
                 auto start = std::chrono::system_clock::now();
                 auto splash = new range_filtering_splash::Splash(insert_keys, range_filtering_splash::SplashRestraintType::relative,
                                                                  0, restraint, cutoff);

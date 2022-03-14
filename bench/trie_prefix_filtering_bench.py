@@ -85,15 +85,15 @@ RST_abs_min=0
 RST_abs_max = 15
 RST_rel_min = 0.0
 RST_rel_max = 1.0
-BF_min = 10000000
-BF_max = 300000000
-BF_interval = 50000000
+BF_min = 500000
+BF_max = 5000000
+BF_interval = 500000
 ST_splashiness_min = 0.8
 ST_splashiness_max = 1.0
 ST_splashiness_interval = 0.05
-SPL_restraint_min = 0.5
+SPL_restraint_min = 0.0
 SPL_restraint_max = 1.0
-SPL_restraint_interval = 0.05
+SPL_restraint_interval = 0.1
 splash = True
 
 for dist in distributions:

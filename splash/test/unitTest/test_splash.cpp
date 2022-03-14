@@ -599,7 +599,7 @@ namespace range_filtering_splash {
             ASSERT_TRUE(trie.lookupPrefix("tries"));
             ASSERT_TRUE(trie.lookupPrefix("tria"));
             ASSERT_TRUE(trie.lookupPrefix("faster"));
-            ASSERT_TRUE(trie.lookupPrefix("fase"));
+            ASSERT_FALSE(trie.lookupPrefix("fase"));
             ASSERT_TRUE(trie.lookupPrefix("trr"));
             ASSERT_TRUE(trie.lookupPrefix("trri"));
             ASSERT_TRUE(trie.lookupPrefix("siesr"));
@@ -721,16 +721,35 @@ namespace range_filtering_splash {
             ASSERT_TRUE(trie.lookupPrefix("faster"));
             ASSERT_TRUE(trie.lookupPrefix("fase"));
 
-            ASSERT_TRUE(trie.lookupPrefix("trr")); // not false positive this time
-            ASSERT_TRUE(trie.lookupPrefix("trri")); // neither this
+            ASSERT_FALSE(trie.lookupPrefix("trr")); // not false positive this time
+            ASSERT_FALSE(trie.lookupPrefix("trri")); // neither this
             ASSERT_TRUE(trie.lookupPrefix("trif")); // but this should be
 
             // due to siesta and siestas and cut-off-coeff=0.8:
-            ASSERT_FALSE(trie.lookupPrefix("siestar")); // not false positive this time
+            ASSERT_TRUE(trie.lookupPrefix("siestar")); // not false positive this time
             ASSERT_FALSE(trie.lookupPrefix("sieste"));
             ASSERT_TRUE(trie.lookupPrefix("siestaaan")); // false positive this time?
             ASSERT_TRUE(trie.lookupPrefix("siestaaa"));
             ASSERT_TRUE(trie.lookupPrefix("siestaaas"));
+        }
+
+        TEST_F(SplashUnitTest, trickyExample) {
+            std::vector<std::string> keys = {
+                    "gjohjwcqbza",
+                    "gjohjwcqbzb",
+                    "gjohjwcqbzc",
+                    "gjohjwcqbzd",
+                    "gjojmrxzydtrc",
+                    "gjokabxsjwidb",
+                    "gjokaibedhagcb",
+                    "gjokaidiwhnflc",
+                    "gjokaidiwhnfld",
+                    "gjokaidmkpcpc",
+                    "gjokaitpuxgjvzvbb",
+                    "gjokaitpuxgjvzvbd"
+            };
+            auto trie = Splash(keys, SplashRestraintType::relative, 0, 0.3, 0.5);
+            ASSERT_TRUE(trie.lookupPrefix("gjokabxsj"));
         }
 
         void loadWordList() {
