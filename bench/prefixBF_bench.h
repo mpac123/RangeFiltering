@@ -17,6 +17,7 @@
 #include "../succinct_trie/include/fst.hpp"
 #include "../splash/include/splash.hpp"
 #include "../splash/include/config.hpp"
+#include "../bloomed_splash/include/bloomed_splash.hpp"
 
 namespace prefixBF_bench {
 
@@ -361,6 +362,25 @@ namespace prefixBF_bench {
                 auto start = std::chrono::system_clock::now();
                 auto splash = new range_filtering_splash::Splash(insert_keys, range_filtering_splash::SplashRestraintType::absolute,
                                                                  restraint, 0, cutoff);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(splash, trie, prefixes);
+                std::cout << splash->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                          << std::endl;
+            }
+        }
+    }
+
+    void runBloomedSplash(std::vector<std::string> insert_keys, std::vector<std::string> prefixes,
+                           int height_min, int height_max,
+                           int bf_size_min, int bf_size_max, int bf_interval,
+                           double bf_last_level_penalty) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (auto height = height_min; height <= height_max; height++) {
+            for (auto bf_size = bf_size_min; bf_size <= bf_size_max; bf_size += bf_interval) {
+                auto start = std::chrono::system_clock::now();
+                auto splash = new range_filtering_bloomed_splash::BloomedSplash(insert_keys, height, bf_size, bf_last_level_penalty);
                 auto end = std::chrono::system_clock::now();
                 std::chrono::duration<double> elapsed_seconds = end - start;
                 auto[fpr, query_time] = bench::calculateFPR(splash, trie, prefixes);

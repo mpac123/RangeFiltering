@@ -19,6 +19,13 @@ int main(int argc, char *argv[]) {
     double relative_restraint_value_max = 1.0;
     double relative_restraint_interval = 0.05;
 
+    uint64_t fst_height_min = 5;
+    uint64_t fst_height_max = 10;
+    uint32_t bf_size_min = 1000;
+    uint32_t bf_size_max = 10000;
+    uint32_t bf_interval = 1000;
+    double bf_last_level_penalty = 0.5;
+
     std::tuple<uint32_t, uint32_t> surf_params = {0, 0};
 
     if (argc > 4) {
@@ -47,6 +54,15 @@ int main(int argc, char *argv[]) {
             absolute_restraint_value_max = std::stoi(argv[10]);
             absolute_restraint_interval = std::stoi(argv[11]);
         }
+    }
+
+    if (data_structure == "bloomed_splash" && argc > 10) {
+        fst_height_min = std::stoi(argv[5]);
+        fst_height_max = std::stoi(argv[6]);
+        bf_size_min = std::stoi(argv[7]);
+        bf_size_max = std::stoi(argv[8]);
+        bf_interval = std::stoi(argv[9]);
+        bf_last_level_penalty = std::stod(argv[10]);
     }
 
     std::string input_filename = input_dir + data_type + "_input.txt";
@@ -82,6 +98,8 @@ int main(int argc, char *argv[]) {
         }
     } else if (data_structure == "fst") {
         prefixBF_bench::runTestsFST(keys, prefixes);
+    } else if (data_structure == "bloomed_splash") {
+        prefixBF_bench::runBloomedSplash(keys, prefixes, fst_height_min, fst_height_max, bf_size_min, bf_size_max, bf_interval, bf_last_level_penalty);
     } else {
         std::cout << "Unknown data structure " << data_structure << std::endl;
     }

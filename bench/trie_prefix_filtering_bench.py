@@ -57,6 +57,12 @@ def run_fst(dist, qt, workload_dir):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return pd.read_csv(p.stdout, delimiter="\t")
 
+def run_bloomed_splash(dist, qt, workload_dir, height_min, height_max, bf_size_min, bf_size_max, bf_interval, bf_penalty):
+    cmd = ["../build/bench/prefix_filtering_bench", str(dist), str(qt), str(workload_dir), "bloomed_splash", str(height_min), str(height_max), str(bf_size_min), str(bf_size_max), 
+    str(bf_interval), str(bf_penalty)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return pd.read_csv(p.stdout, delimiter="\t")
+
 def run_surf(dist, qt, workload_dir):
     cmd = ["../build/bench/prefix_filtering_bench", str(dist), str(qt), str(workload_dir), "surf", str(0), str(0)]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -72,7 +78,7 @@ def run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, BF_m
 distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 querytypes=["similar", "random", "last_letter"]
 dir="100k_new"
-results_dir = "results/splash"
+results_dir = "results/splash_all"
 workload_dir = "workload-gen/workloads/%s/" % dir
 
 if not os.path.exists(results_dir):
@@ -94,41 +100,118 @@ ST_splashiness_interval = 0.05
 SPL_restraint_min = 0.0
 SPL_restraint_max = 1.0
 SPL_restraint_interval = 0.1
+SPL_abs_restraint_min = 0
+SPL_abs_restraint_max = 15
+SPL_abs_restraint_interval = 1
 splash = True
+test_type = "all"
+# Bloomed Splash parameters
+height_min = 5
+height_max = 10
+bf_size_min = 100000
+bf_size_max = 1000000
+bf_interval = 100000
+bf_penalty = 0.5
 
 for dist in distributions:
     for qt in querytypes:
         print("Running bench for distribution = %s and query type = %s" % (dist, qt))
         if splash:
-            df_splash_0_7 = run_splash(dist, qt, workload_dir, 0.7, 0.7, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
-            df_splash_0_8 = run_splash(dist, qt, workload_dir, 0.8, 0.8, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
-            df_splash_0_9 = run_splash(dist, qt, workload_dir, 0.9, 0.9, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
-            df_splash_1_0 = run_splash(dist, qt, workload_dir, 1.0, 1.0, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
-            df_surf_real = run_surf(dist, qt, workload_dir)
-            df_bf = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.5)
-            df_fst = run_fst(dist, qt, workload_dir)
+            if test_type == "cut_off_rel":
+                df_splash_0_7 = run_splash(dist, qt, workload_dir, 0.7, 0.7, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
+                df_splash_0_8 = run_splash(dist, qt, workload_dir, 0.8, 0.8, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
+                df_splash_0_9 = run_splash(dist, qt, workload_dir, 0.9, 0.9, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
+                df_splash_1_0 = run_splash(dist, qt, workload_dir, 1.0, 1.0, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
+                df_surf_real = run_surf(dist, qt, workload_dir)
+                df_fst = run_fst(dist, qt, workload_dir)
 
-            print(df_splash_0_7)
-            #print(df_surf_real.head())
-            #print(df_bf)
-            #print(df_fst)
+                df_splash_0_7.rename(columns={'FPR': 'Splash y=0.7'}, inplace=True)
+                df_splash_0_8.rename(columns={'FPR': 'Splash y=0.8'}, inplace=True)
+                df_splash_0_9.rename(columns={'FPR': 'Splash y=0.9'}, inplace=True)
+                df_splash_1_0.rename(columns={'FPR': 'Splash y=1.0'}, inplace=True)
+                df_surf_real.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
+                df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
+                
+                print("Creating DF with stats")
+                dfs = [df_splash_0_7[['Memory usage', 'Splash y=0.7']],
+                    df_splash_0_8[['Memory usage', 'Splash y=0.8']],
+                    df_splash_0_9[['Memory usage', 'Splash y=0.9']],
+                    df_splash_1_0[['Memory usage', 'Splash y=1.0']],
+                    df_surf_real[['Memory usage', 'SuRF Real']],
+                    df_fst[['Memory usage', 'FST']]]
 
-            df_splash_0_7.rename(columns={'FPR': 'Splash y=0.7'}, inplace=True)
-            df_splash_0_8.rename(columns={'FPR': 'Splash y=0.8'}, inplace=True)
-            df_splash_0_9.rename(columns={'FPR': 'Splash y=0.9'}, inplace=True)
-            df_splash_1_0.rename(columns={'FPR': 'Splash y=1.0'}, inplace=True)
-            df_surf_real.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
-            df_bf.rename(columns={'FPR Prefix-BF': 'Bloom Filter z=0.5'}, inplace=True)
-            df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
+            elif test_type == "cut_off_abs":
+                df_splash_0_7 = run_splash(dist, qt, workload_dir, 0.7, 0.7, 0.05, "absolute", SPL_abs_restraint_min, SPL_abs_restraint_max, SPL_abs_restraint_interval)
+                df_splash_0_8 = run_splash(dist, qt, workload_dir, 0.8, 0.8, 0.05, "absolute", SPL_abs_restraint_min, SPL_abs_restraint_max, SPL_abs_restraint_interval)
+                df_splash_0_9 = run_splash(dist, qt, workload_dir, 0.9, 0.9, 0.05, "absolute", SPL_abs_restraint_min, SPL_abs_restraint_max, SPL_abs_restraint_interval)
+                df_splash_1_0 = run_splash(dist, qt, workload_dir, 1.0, 1.0, 0.05, "absolute", SPL_abs_restraint_min, SPL_abs_restraint_max, SPL_abs_restraint_interval)
+                df_surf_real = run_surf(dist, qt, workload_dir)
+                df_bf = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.5)
+                df_fst = run_fst(dist, qt, workload_dir)
+
+                print(df_splash_0_7)
+                #print(df_surf_real.head())
+                #print(df_bf)
+                #print(df_fst)
+
+                df_splash_0_7.rename(columns={'FPR': 'Splash y=0.7'}, inplace=True)
+                df_splash_0_8.rename(columns={'FPR': 'Splash y=0.8'}, inplace=True)
+                df_splash_0_9.rename(columns={'FPR': 'Splash y=0.9'}, inplace=True)
+                df_splash_1_0.rename(columns={'FPR': 'Splash y=1.0'}, inplace=True)
+                df_surf_real.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
+                df_bf.rename(columns={'FPR Prefix-BF': 'Bloom Filter z=0.5'}, inplace=True)
+                df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
+                
+                print("Creating DF with stats")
+                dfs = [df_splash_0_7[['Memory usage', 'Splash y=0.7']],
+                    df_splash_0_8[['Memory usage', 'Splash y=0.8']],
+                    df_splash_0_9[['Memory usage', 'Splash y=0.9']],
+                    df_splash_1_0[['Memory usage', 'Splash y=1.0']],
+                    df_surf_real[['Memory usage', 'SuRF Real']],
+                    #df_bf[['Memory usage', 'Bloom Filter z=0.5']], 
+                    df_fst[['Memory usage', 'FST']]]
             
-            print("Creating DF with stats")
-            dfs = [df_splash_0_7[['Memory usage', 'Splash y=0.7']],
-                df_splash_0_8[['Memory usage', 'Splash y=0.8']],
-                df_splash_0_9[['Memory usage', 'Splash y=0.9']],
-                df_splash_1_0[['Memory usage', 'Splash y=1.0']],
-                df_surf_real[['Memory usage', 'SuRF Real']],
-                df_bf[['Memory usage', 'Bloom Filter z=0.5']], 
-                df_fst[['Memory usage', 'FST']]]
+            elif test_type == "bloomed_splash":
+                df_splash_5 = run_bloomed_splash(dist, qt, workload_dir, 5, 5, bf_size_min, bf_size_max, bf_interval, bf_penalty)
+                df_splash_6 = run_bloomed_splash(dist, qt, workload_dir, 6, 6, bf_size_min, bf_size_max, bf_interval, bf_penalty)
+                df_splash_7 = run_bloomed_splash(dist, qt, workload_dir, 7, 7, bf_size_min, bf_size_max, bf_interval, bf_penalty)
+                df_splash_8 = run_bloomed_splash(dist, qt, workload_dir, 8, 8, bf_size_min, bf_size_max, bf_interval, bf_penalty)
+                df_surf_real = run_surf(dist, qt, workload_dir)
+                df_fst = run_fst(dist, qt, workload_dir)
+
+                df_splash_5.rename(columns={'FPR': 'Bloomed Splash height=5'}, inplace=True)
+                df_splash_6.rename(columns={'FPR': 'Bloomed Splash height=6'}, inplace=True)
+                df_splash_7.rename(columns={'FPR': 'Bloomed Splash height=7'}, inplace=True)
+                df_splash_8.rename(columns={'FPR': 'Bloomed Splash height=8'}, inplace=True)
+                df_surf_real.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
+                df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
+                
+                print("Creating DF with stats")
+                dfs = [df_splash_5[['Memory usage', 'Bloomed Splash height=5']],
+                    df_splash_6[['Memory usage', 'Bloomed Splash height=6']],
+                    df_splash_7[['Memory usage', 'Bloomed Splash height=7']],
+                    df_splash_8[['Memory usage', 'Bloomed Splash height=8']],
+                    df_surf_real[['Memory usage', 'SuRF Real']],
+                    df_fst[['Memory usage', 'FST']]]
+            else:
+                df_splash_0_8 = run_splash(dist, qt, workload_dir, 0.8, 0.8, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
+                df_splash_7 = run_bloomed_splash(dist, qt, workload_dir, 7, 7, bf_size_min, bf_size_max, bf_interval, bf_penalty)
+                df_surf_real = run_surf(dist, qt, workload_dir)
+                df_bf = run_prefixBF_bench(dist, qt, workload_dir, BF_min, BF_max, BF_interval, 3, True, "proportional", 0.5)
+                df_fst = run_fst(dist, qt, workload_dir)
+
+                df_splash_0_8.rename(columns={'FPR': 'Splash y=0.8'}, inplace=True)
+                df_splash_7.rename(columns={'FPR': 'Bloomed Splash height=7'}, inplace=True)
+                df_surf_real.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
+                df_bf.rename(columns={'FPR Prefix-BF': 'Bloom Filter z=0.5'}, inplace=True)
+                df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
+                
+                print("Creating DF with stats")
+                dfs = [df_splash_0_8[['Memory usage', 'Splash y=0.8']],
+                    df_splash_7[['Memory usage', 'Bloomed Splash height=7']],
+                    df_bf[['Memory usage', 'Bloom Filter z=0.5']], 
+                    df_surf_real[['Memory usage', 'SuRF Real']],
+                    df_fst[['Memory usage', 'FST']]]
 
         else:
             df_surfing_trie = run_surfingTrie_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_size_max)
