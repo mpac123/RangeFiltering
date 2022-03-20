@@ -46,6 +46,9 @@ namespace range_filtering_rosetta {
             ASSERT_TRUE(rosetta.lookupRange("f", "f"));
             ASSERT_TRUE(rosetta.lookupRange("f", "fa"));
             ASSERT_TRUE(rosetta.lookupRange("f", "fast"));
+            ASSERT_TRUE(rosetta.lookupRange("t", "top"));
+            ASSERT_TRUE(rosetta.lookupRange("t", "tor"));
+            ASSERT_TRUE(rosetta.lookupRange("t", "tr"));
             ASSERT_TRUE(rosetta.lookupRange("t", "tram"));
         }
     }

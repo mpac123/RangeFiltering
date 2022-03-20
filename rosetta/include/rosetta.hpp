@@ -20,7 +20,7 @@ private:
     bool failed_;
     uint32_t maxLevel_;
 
-    void insertPrefixesOfLength(std::vector<std::string>& prefixes, uint32_t single_bf_size);
+    void insertPrefixesOfLength(uint32_t length, std::vector<std::string>& prefixes, uint32_t single_bf_size);
     bool lookupRange(boost::multiprecision::uint256_t from, boost::multiprecision::uint256_t to);
     bool lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt);
 };
@@ -50,22 +50,28 @@ Rosetta::Rosetta(const std::vector<std::string>& keys, uint32_t total_size) {
     }
 
     bloomFilters_ = std::vector<BF>();
+    uint32_t length = 1;
     for (auto prefix_group : prefixesGroupedByLength) {
         uint64_t bf_size = total_size * (prefix_group.size() / (all_prefixes_cnt + 0.)) / 8.0;
-        insertPrefixesOfLength(prefix_group, bf_size);
+        insertPrefixesOfLength(length, prefix_group, bf_size);
+        length++;
     }
 }
 
-void Rosetta::insertPrefixesOfLength(std::vector<std::string> &prefixes, uint32_t single_bf_size) {
+void Rosetta::insertPrefixesOfLength(uint32_t length, std::vector<std::string> &prefixes, uint32_t single_bf_size) {
     for (size_t i = 0; i < 8; i++) {
         auto trimmed_prefixes = std::vector<boost::multiprecision::uint256_t>();
         for (auto prefix : prefixes) {
             // Replace last character with 0-prepended i bits
-            auto last_char = prefix[prefix.length() - 1];
-            last_char >>= (7 - i);
-            auto new_prefix = prefix.substr(0, prefix.length() - 1);
-            new_prefix.push_back(last_char);
-            trimmed_prefixes.push_back(parseStringToUint256(new_prefix));
+            if (prefix.length() == length) {
+                auto last_char = prefix[prefix.length() - 1];
+                uint64_t mask = ~((1 << (7 - i)) - 1);
+                last_char &= (uint8_t) mask;
+                auto new_prefix = prefix.substr(0, prefix.length() - 1);
+                new_prefix.push_back(last_char);
+                trimmed_prefixes.push_back(parseStringToUint256(new_prefix));
+            } else trimmed_prefixes.push_back(parseStringToUint256(prefix));
+
         }
         bloomFilters_.push_back(BF(trimmed_prefixes, single_bf_size));
     }
