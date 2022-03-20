@@ -2,14 +2,31 @@
 #include "prefixBF_bench.h"
 
 int main(int argc, char *argv[]) {
-    std::string data_type = "uniform";
-    std::string query_type = "similar";
+    std::string data_type = "last_letter_different";
+    std::string query_type = "last_letter";
     std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/100k_new/";
 
-    std::string data_structure = "fst";
+    std::string data_structure = "splash";
+    range_filtering_splash::SplashRestraintType restraintType = range_filtering_splash::SplashRestraintType::relative;
 
-    std::tuple<uint32_t, uint32_t, uint32_t> prefixBF_params = {100000, 20000000, 500000};
-    std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> prefixQF_params = {21, 21, 1, 8};
+    double cutoff_min = 1.0;
+    double cutoff_max = 1.0;
+    double cutoff_interval = 0.05;
+    uint64_t absolute_restraint_value_min = 0;
+    uint64_t absolute_restraint_value_max = 0;
+    uint64_t absolute_restraint_interval = 1.0;
+    double relative_restraint_value_min = 1.0;
+    double relative_restraint_value_max = 1.0;
+    double relative_restraint_interval = 0.05;
+
+    uint64_t fst_height_min = 5;
+    uint64_t fst_height_max = 10;
+    uint32_t bf_size_min = 1000;
+    uint32_t bf_size_max = 10000;
+    uint32_t bf_interval = 1000;
+    double bf_last_level_penalty = 0.5;
+
+    std::tuple<uint32_t, uint32_t> surf_params = {0, 0};
 
     if (argc > 4) {
         data_type = argv[1];
@@ -18,9 +35,34 @@ int main(int argc, char *argv[]) {
         data_structure = argv[4];
     }
 
-    if (data_structure == "surf" && argc > 11) {
-        prefixBF_params = {std::stoi(argv[5]), std::stoi(argv[6]), std::stoi(argv[7])};
-        prefixQF_params = {std::stoi(argv[8]), std::stoi(argv[9]), std::stoi(argv[10]), std::stoi(argv[11])};
+    if (data_structure == "surf" && argc > 6) {
+        surf_params = {std::stoi(argv[5]), std::stoi(argv[6])};
+    }
+
+    if (data_structure == "splash" && argc > 11) {
+        cutoff_min = std::stod(argv[5]);
+        cutoff_max = std::stod(argv[6]);
+        cutoff_interval = std::stod(argv[7]);
+        if (strcmp(argv[8], "relative") == 0) {
+            restraintType = range_filtering_splash::SplashRestraintType::relative;
+            relative_restraint_value_min = std::stod(argv[9]);
+            relative_restraint_value_max = std::stod(argv[10]);
+            relative_restraint_interval = std::stod(argv[11]);
+        } else if (strcmp(argv[8], "absolute") == 0) {
+            restraintType = range_filtering_splash::SplashRestraintType::absolute;
+            absolute_restraint_value_min = std::stoi(argv[9]);
+            absolute_restraint_value_max = std::stoi(argv[10]);
+            absolute_restraint_interval = std::stoi(argv[11]);
+        }
+    }
+
+    if (data_structure == "bloomed_splash" && argc > 10) {
+        fst_height_min = std::stoi(argv[5]);
+        fst_height_max = std::stoi(argv[6]);
+        bf_size_min = std::stoi(argv[7]);
+        bf_size_max = std::stoi(argv[8]);
+        bf_interval = std::stoi(argv[9]);
+        bf_last_level_penalty = std::stod(argv[10]);
     }
 
     std::string input_filename = input_dir + data_type + "_input.txt";
@@ -38,5 +80,27 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Memory usage\tFPR\tSuffix size\tCreation time\tQuery time\tTrie memory usage" << std::endl;
-    prefixBF_bench::runTestsFST(keys, prefixes);
+    if (data_structure == "surf") {
+        prefixBF_bench::runTestsSuRFReal(0, 0, keys, prefixes);
+    } else if (data_structure == "splash") {
+        if (restraintType == range_filtering_splash::SplashRestraintType::relative) {
+            prefixBF_bench::runSplashRelative(keys, prefixes,
+                                              cutoff_min, cutoff_max, cutoff_interval,
+                                              relative_restraint_value_min, relative_restraint_value_max,
+                                              relative_restraint_interval);
+        } else if (restraintType == range_filtering_splash::SplashRestraintType::absolute) {
+            prefixBF_bench::runSplashAbsolute(keys, prefixes,
+                                              cutoff_min, cutoff_max, cutoff_interval,
+                                              absolute_restraint_value_min, absolute_restraint_value_max,
+                                              absolute_restraint_interval);
+        } else {
+            std::cout << "Unknown restraint type " << restraintType << std::endl;
+        }
+    } else if (data_structure == "fst") {
+        prefixBF_bench::runTestsFST(keys, prefixes);
+    } else if (data_structure == "bloomed_splash") {
+        prefixBF_bench::runBloomedSplash(keys, prefixes, fst_height_min, fst_height_max, bf_size_min, bf_size_max, bf_interval, bf_last_level_penalty);
+    } else {
+        std::cout << "Unknown data structure " << data_structure << std::endl;
+    }
 }

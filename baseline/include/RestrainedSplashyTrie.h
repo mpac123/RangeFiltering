@@ -12,23 +12,22 @@ namespace range_filtering {
     class RestrainedSplashyTrie : public PrefixFilter {
 
     public:
-        explicit RestrainedSplashyTrie(std::vector<std::string> &keys, uint64_t max_suffix_length,
+        explicit RestrainedSplashyTrie(const std::vector<std::string> &keys, uint64_t max_suffix_length,
                                        double splashiness_coefficient, RestraintType restraintType,
                                        uint64_t absolute_restraint_val, double relative_restraint_val);
         bool lookupPrefix(const std::string &prefix) override;
         uint64_t getMemoryUsage() const override;
         std::string getName() const override { return "RestrainedSplashyTrie"; }
 
-    protected:
+    public:
         class TrieNode {
-        protected:
+        public:
             RestrainedSplashyTrie const& trie_;
 
             TrieNode(RestrainedSplashyTrie const& trie);
             virtual bool lookupNode(const std::string &key, uint64_t position);
             virtual uint64_t getMemoryUsage() const;
 
-        private:
             std::map<char, TrieNode *> children_;
             bool end_of_word_;
             void insertKeys(Trie::TrieNode* current_node);
@@ -50,7 +49,7 @@ namespace range_filtering {
             friend class RestrainedSplashyTrie;
         };
 
-    protected:
+    public:
         TrieNode *root;
         uint64_t max_suffix_length_;
         RestraintType restraintType_;

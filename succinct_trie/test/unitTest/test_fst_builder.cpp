@@ -291,23 +291,23 @@ namespace range_filtering {
             }
         }
 
-        TEST_F (FSTBuilderUnitTest, buildSparseStringTest) {
-            bool include_dense = false;
-            uint32_t sparse_dense_ratio = 0;
-            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
-            builder_->build(words);
-            testSparse(words, words_trunc_);
-            delete builder_;
-        }
-
-        TEST_F (FSTBuilderUnitTest, buildSparseDuplicateTest) {
-            bool include_dense = false;
-            uint32_t sparse_dense_ratio = 0;
-            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
-            builder_->build(words_dup);
-            testSparse(words, words_trunc_);
-            delete builder_;
-        }
+//        TEST_F (FSTBuilderUnitTest, buildSparseStringTest) {
+//            bool include_dense = false;
+//            uint32_t sparse_dense_ratio = 0;
+//            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+//            builder_->build(words);
+//            testSparse(words, words_trunc_);
+//            delete builder_;
+//        }
+//
+//        TEST_F (FSTBuilderUnitTest, buildSparseDuplicateTest) {
+//            bool include_dense = false;
+//            uint32_t sparse_dense_ratio = 0;
+//            builder_ = new FSTBuilder(include_dense, sparse_dense_ratio);
+//            builder_->build(words_dup);
+//            testSparse(words, words_trunc_);
+//            delete builder_;
+//        }
 
         TEST_F (FSTBuilderUnitTest, buildSparseIntTest) {
             bool include_dense = false;

@@ -14,7 +14,7 @@ Trie::TrieNode::TrieNode(TrieNode* _parent) {
     parent = _parent;
 }
 
-Trie::Trie(std::vector<std::string> &keys) : PrefixFilter() {
+Trie::Trie(const std::vector<std::string> &keys) : PrefixFilter() {
     root = new TrieNode();
     insert(root, 0, keys);
 
@@ -23,8 +23,10 @@ Trie::Trie(std::vector<std::string> &keys) : PrefixFilter() {
     root->calculateLevel(0);
 }
 
-void Trie::insert(TrieNode *node, uint64_t position, std::vector<std::string> &keys) {
-    char current = '\0';
+void Trie::insert(TrieNode *node, uint64_t position, const std::vector<std::string> &keys) {
+    const char placeholder = '\377';
+    char current = placeholder;
+    bool currentSet = false;
 
     if (keys.empty()) {
         return;
@@ -39,10 +41,11 @@ void Trie::insert(TrieNode *node, uint64_t position, std::vector<std::string> &k
             continue;
         }
         // Otherwise, continue
-        if (current == '\0') {
+        if (!currentSet) {
             current = key.at(position);
+            currentSet = true;
             keys_with_common_prefix.push_back(key);
-        } else if (current != '\0' && current != key.at(position)) {
+        } else if (current != key.at(position)) {
             // Create new node and call insert recursively on it
             auto new_node = new TrieNode(node);
             insert(new_node, position + 1, keys_with_common_prefix);
@@ -56,7 +59,7 @@ void Trie::insert(TrieNode *node, uint64_t position, std::vector<std::string> &k
         }
     }
 
-    if (current != '\0') {
+    if (currentSet) {
         auto new_node = new TrieNode(node);
         insert(new_node, position + 1, keys_with_common_prefix);
         node->children.emplace(current, new_node);

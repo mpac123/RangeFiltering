@@ -57,7 +57,7 @@ public:
     TrieNode *root;
 
     // Currently, keys must be sorted
-    explicit Trie(std::vector<std::string> &keys);
+    explicit Trie(const std::vector<std::string> &keys);
 
     bool lookupKey(std::string key);
     bool lookupPrefix(const std::string &prefix) override;
@@ -68,7 +68,7 @@ public:
     std::string getName() const override { return "Trie"; }
 
 private:
-    void insert(TrieNode *node, uint64_t position, std::vector<std::string> &keys);
+    void insert(TrieNode *node, uint64_t position, const std::vector<std::string> &keys);
     bool lookupNode(const std::string &key, uint64_t position, TrieNode *node, bool exact);
 
     void moveDownTheNodeToKeyGreaterThan(const std::string &key, uint64_t position, Iter& iter);

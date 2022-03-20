@@ -15,6 +15,9 @@
 #include "SplashyTrie.h"
 #include "RestrainedSplashyTrie.h"
 #include "../succinct_trie/include/fst.hpp"
+#include "../splash/include/splash.hpp"
+#include "../splash/include/config.hpp"
+#include "../bloomed_splash/include/bloomed_splash.hpp"
 
 namespace prefixBF_bench {
 
@@ -329,6 +332,63 @@ namespace prefixBF_bench {
         std::cout << fst->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
                   << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
                   << std::endl;
+    }
+
+    void runSplashRelative(std::vector<std::string> insert_keys, std::vector<std::string> prefixes,
+                           double cutoff_min, double cutoff_max, double cutoff_interval,
+                            double restraint_min, double restraint_max, double restraint_interval) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (auto cutoff = cutoff_min; cutoff <= cutoff_max; cutoff += cutoff_interval) {
+            for (auto restraint = restraint_min; restraint <= restraint_max; restraint += restraint_interval) {
+                auto start = std::chrono::system_clock::now();
+                auto splash = new range_filtering_splash::Splash(insert_keys, range_filtering_splash::SplashRestraintType::relative,
+                                                                 0, restraint, cutoff);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(splash, trie, prefixes);
+                std::cout << splash->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                          << std::endl;
+            }
+        }
+    }
+
+    void runSplashAbsolute(std::vector<std::string> insert_keys, std::vector<std::string> prefixes,
+                           double cutoff_min, double cutoff_max, double cutoff_interval,
+                           int restraint_min, int restraint_max, int restraint_interval) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (auto cutoff = cutoff_min; cutoff <= cutoff_max; cutoff += cutoff_interval) {
+            for (auto restraint = restraint_min; restraint < restraint_max; restraint += restraint_interval) {
+                auto start = std::chrono::system_clock::now();
+                auto splash = new range_filtering_splash::Splash(insert_keys, range_filtering_splash::SplashRestraintType::absolute,
+                                                                 restraint, 0, cutoff);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(splash, trie, prefixes);
+                std::cout << splash->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                          << std::endl;
+            }
+        }
+    }
+
+    void runBloomedSplash(std::vector<std::string> insert_keys, std::vector<std::string> prefixes,
+                           int height_min, int height_max,
+                           int bf_size_min, int bf_size_max, int bf_interval,
+                           double bf_last_level_penalty) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (auto height = height_min; height <= height_max; height++) {
+            for (auto bf_size = bf_size_min; bf_size <= bf_size_max; bf_size += bf_interval) {
+                auto start = std::chrono::system_clock::now();
+                auto splash = new range_filtering_bloomed_splash::BloomedSplash(insert_keys, height, bf_size, bf_last_level_penalty);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end - start;
+                auto[fpr, query_time] = bench::calculateFPR(splash, trie, prefixes);
+                std::cout << splash->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
+                          << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
+                          << std::endl;
+            }
+        }
     }
 
 };

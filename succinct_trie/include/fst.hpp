@@ -57,7 +57,7 @@ namespace range_filtering {
         // Input keys must be SORTED
         //------------------------------------------------------------------
         FST(const std::vector<std::string>& keys) {
-            create(keys, false, kSparseDenseRatio);
+            create(keys, kIncludeDense, kSparseDenseRatio);
         }
 
         FST(const std::vector<std::string>& keys,
