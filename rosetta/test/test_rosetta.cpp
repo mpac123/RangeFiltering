@@ -2,8 +2,16 @@
 
 #include "rosetta.hpp"
 
+#include <fstream>
+
+
 namespace range_filtering_rosetta {
     namespace rosettatest {
+
+    static const std::string kFilePath = "/home/mapac/Coding/RangeFiltering/succinct_trie/test/words.txt";
+    static std::vector<std::string> words;
+    static const int kWordTestSize = 234369;
+
     class RosettaUnitTest : public ::testing::Test {};
 
         TEST_F(RosettaUnitTest, parsingToUint256) {
@@ -60,10 +68,36 @@ namespace range_filtering_rosetta {
             ASSERT_FALSE(rosetta.lookupRange("toz", "tozsRS"));
             ASSERT_FALSE(rosetta.lookupRange("triangle", "triangles"));
         }
+
+        TEST_F (RosettaUnitTest, lookupRangeWordTest) {
+            auto rosetta = new Rosetta(words, 10000);
+            bool exist = rosetta->lookupRange(std::string("\1"), words[0]);
+            ASSERT_TRUE(exist);
+
+            for (unsigned i = 0; i < words.size() - 1; i++) {
+                exist = rosetta->lookupRange(words[i], words[i+1]);
+                ASSERT_TRUE(exist);
+            }
+
+            exist = rosetta->lookupRange(words[words.size() - 1], std::string("zzzzzzzz"));
+            ASSERT_TRUE(exist);
+        }
+
+        void loadWordList() {
+            std::ifstream infile(kFilePath);
+            std::string key;
+            int count = 0;
+            while (infile.good() && count < kWordTestSize) {
+                infile >> key;
+                words.push_back(key);
+                count++;
+            }
+        }
     }
 }
 
 int main (int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
+    range_filtering_rosetta::rosettatest::loadWordList();
     return RUN_ALL_TESTS();
 }
