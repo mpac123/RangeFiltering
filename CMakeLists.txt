@@ -30,6 +30,7 @@ add_subdirectory(external/quotient-filter)
 add_subdirectory(succinct_trie)
 add_subdirectory(splash)
 add_subdirectory(bloomed_splash)
+add_subdirectory(rosetta)
 
 add_executable(main main.cpp)
 target_link_libraries(main TRIE)
