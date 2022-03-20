@@ -38,7 +38,7 @@ namespace range_filtering_rosetta {
                     "toy",
                     "trie",
             };
-            auto rosetta = Rosetta(keys, 1000);
+            auto rosetta = Rosetta(keys, 2000);
 
             ASSERT_FALSE(rosetta.lookupRange("a", "a"));
             ASSERT_FALSE(rosetta.lookupRange("a", "b"));
@@ -48,8 +48,17 @@ namespace range_filtering_rosetta {
             ASSERT_TRUE(rosetta.lookupRange("f", "fast"));
             ASSERT_TRUE(rosetta.lookupRange("t", "top"));
             ASSERT_TRUE(rosetta.lookupRange("t", "tor"));
+            ASSERT_TRUE(rosetta.lookupRange("e", "fa"));
+            ASSERT_TRUE(rosetta.lookupRange("s", "sa"));
+            ASSERT_TRUE(rosetta.lookupRange("r", "sa"));
+            ASSERT_TRUE(rosetta.lookupRange("rabarb", "sa"));
             ASSERT_TRUE(rosetta.lookupRange("t", "tr"));
             ASSERT_TRUE(rosetta.lookupRange("t", "tram"));
+            ASSERT_TRUE(rosetta.lookupRange("triangle", "tries"));
+            ASSERT_FALSE(rosetta.lookupRange("toz", "tozs"));
+            ASSERT_FALSE(rosetta.lookupRange("toys", "toysRS"));
+            ASSERT_FALSE(rosetta.lookupRange("toz", "tozsRS"));
+            ASSERT_FALSE(rosetta.lookupRange("triangle", "triangles"));
         }
     }
 }

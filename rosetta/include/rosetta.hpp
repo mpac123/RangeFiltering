@@ -66,7 +66,7 @@ void Rosetta::insertPrefixesOfLength(uint32_t length, std::vector<std::string> &
             if (prefix.length() == length) {
                 auto last_char = prefix[prefix.length() - 1];
                 uint64_t mask = ~((1 << (7 - i)) - 1);
-                last_char &= (uint8_t) mask;
+                last_char &= mask;
                 auto new_prefix = prefix.substr(0, prefix.length() - 1);
                 new_prefix.push_back(last_char);
                 trimmed_prefixes.push_back(parseStringToUint256(new_prefix));
@@ -131,7 +131,7 @@ bool Rosetta::lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned
     if (level == maxLevel_ - 1) return true;
 
     // Otherwise, start the process of doubting
-    auto right_query = query | (boost::multiprecision::uint256_t(1) << (255 - level));
+    auto right_query = query | (boost::multiprecision::uint256_t(1) << (254 - level));
     return lookupDyadicRange(query, level + 1, cnt + 1)
         || lookupDyadicRange(right_query, level + 1, cnt + 1);
 }
