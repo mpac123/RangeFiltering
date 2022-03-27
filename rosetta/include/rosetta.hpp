@@ -15,12 +15,14 @@ public:
     static unsigned countTrailingZeroes(boost::multiprecision::uint256_t n);
 
     static const uint32_t MAX_LENGTH = 32;
+    static const uint32_t MAX_DOUBTING_DEPTH = 64;
 private:
     std::vector<BF> bloomFilters_;
     bool failed_;
     uint32_t maxLevel_;
+    uint16_t k_;
 
-    void insertPrefixesOfLength(uint32_t length, std::vector<std::string>& prefixes, uint32_t single_bf_size);
+    void insertPrefixesOfLength(uint32_t length, const std::vector<std::string>& prefixes, uint32_t single_bf_size);
     bool lookupRange(boost::multiprecision::uint256_t from, boost::multiprecision::uint256_t to);
     bool lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt);
 };
@@ -36,32 +38,24 @@ Rosetta::Rosetta(const std::vector<std::string>& keys, uint32_t total_size) {
     }
     maxLevel_ = max_length * 8;
 
-    uint64_t all_prefixes_cnt = 0;
-    auto prefixesGroupedByLength = std::vector<std::vector<std::string>>(max_length, std::vector<std::string>());
-    for (const auto& key : keys) {
-        for (size_t i = 0; i < key.length(); i++) {
-            prefixesGroupedByLength[i].push_back(key.substr(0, i + 1));
-            all_prefixes_cnt += 1;
-        }
-        for (size_t i = key.length(); i < max_length; i++ ) {
-            prefixesGroupedByLength[i].push_back(key);
-            all_prefixes_cnt += 1;
-        }
-    }
 
     bloomFilters_ = std::vector<BF>();
-    uint32_t length = 1;
-    for (auto prefix_group : prefixesGroupedByLength) {
-        uint64_t bf_size = total_size * (prefix_group.size() / (all_prefixes_cnt + 0.)) / 8.0;
-        insertPrefixesOfLength(length, prefix_group, bf_size);
-        length++;
+    uint64_t bf_size = total_size / max_length / 8.0;
+    k_ = BF::calculateNumberOfHashes(keys.size(), bf_size);
+
+    for (size_t length = 1; length <= max_length; length++) {
+        insertPrefixesOfLength(length, keys, bf_size);
     }
 }
 
-void Rosetta::insertPrefixesOfLength(uint32_t length, std::vector<std::string> &prefixes, uint32_t single_bf_size) {
+void Rosetta::insertPrefixesOfLength(uint32_t length, const std::vector<std::string> &keys, uint32_t single_bf_size) {
     for (size_t i = 0; i < 8; i++) {
         auto trimmed_prefixes = std::vector<boost::multiprecision::uint256_t>();
-        for (auto prefix : prefixes) {
+        for (const auto& key : keys) {
+            auto prefix = key;
+            if (length < prefix.length()) {
+                prefix = key.substr(0, length);
+            }
             // Replace last character with 0-prepended i bits
             if (prefix.length() == length) {
                 auto last_char = prefix[prefix.length() - 1];
@@ -73,7 +67,7 @@ void Rosetta::insertPrefixesOfLength(uint32_t length, std::vector<std::string> &
             } else trimmed_prefixes.push_back(parseStringToUint256(prefix));
 
         }
-        bloomFilters_.push_back(BF(trimmed_prefixes, single_bf_size));
+        bloomFilters_.emplace_back(BF(trimmed_prefixes, single_bf_size, k_));
     }
 }
 
@@ -123,9 +117,9 @@ bool Rosetta::lookupRange(boost::multiprecision::uint256_t from, boost::multipre
 }
 
 bool Rosetta::lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt) {
-    if (cnt > 16) return true;
+    if (cnt > MAX_DOUBTING_DEPTH) return true;
 
-    auto res = bloomFilters_[level].lookupKey(query);
+    auto res = bloomFilters_[level].lookupKey(query, k_);
     if (!res) return false;
 
     if (level == maxLevel_ - 1) return true;
@@ -137,7 +131,7 @@ bool Rosetta::lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned
 }
 
 uint64_t Rosetta::getMemoryUsage() const {
-    uint64_t size = 0;
+    uint64_t size = sizeof(uint16_t);
     for (auto bf : bloomFilters_) {
         size += bf.getMemoryUsage();
     }

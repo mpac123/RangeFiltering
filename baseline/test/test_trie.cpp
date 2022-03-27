@@ -101,6 +101,11 @@ public:
         ASSERT_FALSE(trie.lookupRange("fare", true, "fast", false));
         ASSERT_FALSE(trie.lookupRange("fat", true, "o", false));
         ASSERT_TRUE(trie.lookupRange("fat", true, "so", false));
+
+        ASSERT_FALSE(trie.lookupRange("zaatjyag", true, "zaatjyao", true));
+        ASSERT_FALSE(trie.lookupRange("sas", true, "tap", true));
+        ASSERT_FALSE(trie.lookupRange("topor", true, "tors", true));
+        ASSERT_FALSE(trie.lookupRange("toyor", true, "tram", true));
     }
 
     TEST_F(TrieUnitTest, otherTrie) {

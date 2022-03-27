@@ -8,12 +8,15 @@
 #include <algorithm>
 #include <unordered_set>
 #include <random>
+#include <sstream>
+#include <string>
 
 #include "Trie.hpp"
 #include "CompactTrie.hpp"
 #include "surf.hpp"
 #include "BlindTrieWithBloomFilter.h"
 #include "PrefixBloomFilter.h"
+#include "RangeFilter.h"
 #include <chrono>
 #include <ctime>
 
@@ -27,6 +30,25 @@ namespace bench {
         if (infile.is_open()) {
             while (getline(infile, line)) {
                 keys.push_back(line);
+            }
+            infile.close();
+        } else {
+            std::cout << "Can't open file" << std::endl;
+        }
+    }
+
+    void loadRangeQueriesFromFile(const std::string& file_name, std::vector<std::pair<std::string, std::string>> &keys) {
+        std::string line;
+        std::ifstream infile(file_name);
+        if (infile.is_open()) {
+            while (getline(infile, line)) {
+                std::string segment;
+                std::vector<std::string> seglist;
+                std::stringstream streamline(line);
+                while (std::getline(streamline, segment, ';')) {
+                    seglist.push_back(segment);
+                }
+                keys.emplace_back(seglist[0], seglist[1]);
             }
             infile.close();
         } else {
@@ -125,7 +147,7 @@ namespace bench {
 
 
 
-            negatives += (int) !foundInFilter;
+             negatives += (int) !foundInFilter;
             false_positives += (int) (!foundInTrie && foundInFilter);
             true_negatives += (int) (!foundInFilter && !foundInTrie);
             total_query_time += total_time / 10;
@@ -134,6 +156,39 @@ namespace bench {
         assert(negatives == true_negatives);
         double fp_rate = false_positives / (negatives + false_positives + 0.0);
         double average_query_time = total_query_time / prefixes.size();
+        return std::make_tuple(fp_rate, average_query_time);
+    }
+
+    std::tuple<double, double> calculateFPR(range_filtering::RangeFilter *filter,
+                                            range_filtering::Trie &trie,
+                                            std::vector<std::pair<std::string, std::string>> &queries) {
+        uint32_t negatives = 0;
+        uint32_t false_positives = 0;
+        uint32_t true_negatives = 0;
+        double total_query_time = 0.;
+        for (const auto& query : queries) {
+            bool foundInTrie = trie.lookupRange(query.first, true, query.second, true);
+            double total_time = 0.0;
+            bool foundInFilter;
+            for (size_t i = 0; i < 10; i++) {
+                auto start = std::chrono::system_clock::now();
+                foundInFilter = filter->lookupRange(query.first, query.second);
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end-start;
+                total_time += elapsed_seconds.count();
+            }
+
+
+
+            negatives += (int) !foundInFilter;
+            false_positives += (int) (!foundInTrie && foundInFilter);
+            true_negatives += (int) (!foundInFilter && !foundInTrie);
+            total_query_time += total_time / 10;
+        }
+
+        //assert(negatives == true_negatives);
+        double fp_rate = false_positives / (true_negatives + false_positives + 0.0);
+        double average_query_time = total_query_time / queries.size();
         return std::make_tuple(fp_rate, average_query_time);
     }
 
