@@ -3,13 +3,15 @@
 
 #include <vector>
 #include <PrefixFilter.h>
+#include <RangeFilter.h>
 #include "../external/SuRF/include/surf.hpp"
 
 namespace range_filtering {
-class SuRFFacade : public PrefixFilter {
+class SuRFFacade : public PrefixFilter, public RangeFilter {
 public:
     explicit SuRFFacade(std::vector<std::string> &keys, bool real, uint32_t bits_cnt);
     bool lookupPrefix(const std::string &prefix) override;
+    bool lookupRange(const std::string &left, const std::string &right) override;
     uint64_t getMemoryUsage() const override;
     std::string getName() const override { return name_; }
 private:
@@ -36,6 +38,10 @@ bool SuRFFacade::lookupPrefix(const std::string &prefix) {
 
 uint64_t SuRFFacade::getMemoryUsage() const {
     return surf_->getMemoryUsage();
+}
+
+bool SuRFFacade::lookupRange(const std::string &left, const std::string &right) {
+    return surf_->lookupRange(left, true, right, true);
 }
 }
 

@@ -202,6 +202,7 @@ void Trie::Iter::findLeftMostKeyOfParentWithChildOnRight() {
 bool Trie::lookupRange(const std::string& left_key, const bool left_inclusive,
                  const std::string& right_key, const bool right_inclusive) {
     auto left_key_iter = moveToKeyGreaterThan(left_key, left_inclusive);
+    if (!left_key_iter.is_valid_) return false;
     auto compare_left = left_key_iter.compare(left_key);
     if (compare_left == 0) {
         return true;

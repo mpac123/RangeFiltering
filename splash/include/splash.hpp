@@ -9,10 +9,11 @@
 #include "louds_sparse.hpp"
 #include "splash_builder.hpp"
 #include "PrefixFilter.h"
+#include "RangeFilter.h"
 
 namespace range_filtering_splash {
 
-    class Splash : public range_filtering::PrefixFilter {
+    class Splash : public range_filtering::PrefixFilter, public range_filtering::RangeFilter {
     public:
         class Iter {
         public:
@@ -83,6 +84,7 @@ namespace range_filtering_splash {
 
         bool lookupKey(const std::string& key) const;
         bool lookupPrefix(const std::string& prefix) override;
+        bool lookupRange(const std::string& left_key, const std::string& right_key) override;
         // This function searches in a conservative way: if inclusive is true
         // and the stored key prefix matches key, iter stays at this key prefix.
         Splash::Iter moveToKeyGreaterThan(const std::string& key, const bool inclusive) const;
@@ -310,6 +312,10 @@ namespace range_filtering_splash {
         else if (connect_node_num != 0)
             return louds_sparse_->lookupPrefix(prefix, connect_node_num);
         return true;
+    }
+
+    bool Splash::lookupRange(const std::string &left_key, const std::string &right_key) {
+        return lookupRange(left_key, true, right_key, true);
     }
 
 //============================================================================

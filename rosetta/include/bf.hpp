@@ -8,23 +8,21 @@
 namespace range_filtering_rosetta {
     class BF {
     public:
-        BF(std::vector<boost::multiprecision::uint256_t>& keys, uint32_t m);
-        bool lookupKey(const boost::multiprecision::uint256_t& key);
+        BF(std::vector<boost::multiprecision::uint256_t>& keys, uint32_t m, uint16_t k);
+        bool lookupKey(const boost::multiprecision::uint256_t& key, uint16_t k);
         uint64_t getMemoryUsage();
+
+        uint16_t static calculateNumberOfHashes(uint32_t n, uint32_t m);
 
     private:
         std::vector<bool> bitArray_;
-        uint16_t k_;
-
-        uint16_t calculateNumberOfHashes(uint32_t n, uint32_t m);
     };
 
-    BF::BF(std::vector<boost::multiprecision::uint256_t> &keys, uint32_t m) {
-        k_ = calculateNumberOfHashes(keys.size(), m);
+    BF::BF(std::vector<boost::multiprecision::uint256_t> &keys, uint32_t m, uint16_t k) {
         bitArray_ = std::vector<bool>(m);
 
         for (const auto& key : keys) {
-            for (size_t i = 0; i < k_; i++) {
+            for (size_t i = 0; i < k; i++) {
                 uint32_t result;
                 MurmurHash3_x86_32(&key, 32, i, (void*) &result);
                 bitArray_[result % bitArray_.size()] = true;
@@ -39,8 +37,8 @@ namespace range_filtering_rosetta {
         return k;
     }
 
-    bool BF::lookupKey(const boost::multiprecision::uint256_t &key) {
-        for (size_t i = 0 ; i < k_ ; i++) {
+    bool BF::lookupKey(const boost::multiprecision::uint256_t &key, uint16_t k) {
+        for (size_t i = 0 ; i < k ; i++) {
             uint32_t result;
             MurmurHash3_x86_32(&key, 32, i, (void*) &result);
             if (!bitArray_[result % bitArray_.size()]) {
@@ -51,7 +49,7 @@ namespace range_filtering_rosetta {
     }
 
     uint64_t BF::getMemoryUsage() {
-        return sizeof(uint16_t) + std::ceil(bitArray_.size() / 8.0);
+        return std::ceil(bitArray_.size() / 8.0);
     }
 }
 

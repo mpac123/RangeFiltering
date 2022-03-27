@@ -566,9 +566,63 @@ namespace range_filtering {
             };
             auto trie = FST(keys);
 
-            //ASSERT_FALSE(trie.lookupRange("a", true, "a0", true));
-            //ASSERT_FALSE(trie.lookupRange("e", true, "ea", false));
+            ASSERT_FALSE(trie.lookupRange("a", true, "a0", true));
+            ASSERT_FALSE(trie.lookupRange("e", true, "ea", false));
+            ASSERT_FALSE(trie.lookupRange("fasu", "fasz"));
+            ASSERT_FALSE(trie.lookupRange("seseseseseseseesesesf", "seseseseseseseesesesg"));
 
+        }
+
+        TEST_F(FSTUnitTest, tricky) {
+            std::vector<std::string> keys = {
+                    //"f",
+                    //"far",
+                    //"fast",
+                    "s",
+                    //"top",
+                    "toy",
+                    "toyak",
+                    "toybk",
+                    "toyck",
+                    //"toydk",
+                    "toyota",
+                    "trie",
+            };
+            auto trie = FST(keys);
+
+            auto iter = trie.moveToKeyGreaterThan("toyek", true);
+
+            ASSERT_EQ(iter.getKey(), "toyota");
+        }
+
+        TEST_F(FSTUnitTest, trickyCase) {
+            std::vector<std::string> keys = {
+                    "oocvgxryapxon",
+                    "oocvgxrz",
+                    "oocvgxrzicws",
+//                    "oocvgxrzieayyd",
+//                    "oocvgxrzirev",
+//                    "oocvgxrziuvptd",
+                    "oocvgxrzjfgqx",
+                    "oocvgxrzknwhxkbq",
+//                    "oocvgxrzkpmhlzb",
+//                    "oocvgxrzkstldyn",
+//                    "oocvgxrzkwdlurq",
+                    "oocvgxrzxbfghcboeu",
+//                    "oocvgxrzxbwec",
+//                    "oocvgxrzxepkgl",
+//                    "oocvgxrzxqfrq",
+//                    "oocvgxrzxqjrh",
+//                    "oocvgxrzxqjrxj",
+//                    "oocvgxrzxzxcudv",
+                    "oocvgxsddqjhw",
+                    "oocvgxshafosrf"
+            };
+            auto trie = FST(keys);
+
+            auto iter = trie.moveToKeyGreaterThan("oocvgxrzp", true);
+
+            ASSERT_EQ(iter.getKey(), "oocvgxrzxbfghcboeu");
         }
 
         void loadWordList() {
