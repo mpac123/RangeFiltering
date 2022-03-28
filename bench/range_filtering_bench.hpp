@@ -7,6 +7,7 @@
 #include "../rosetta/include/rosetta.hpp"
 #include "../succinct_trie/include/fst.hpp"
 #include "../splash/include/splash.hpp"
+#include "../rosetta/include/lil_rosetta.hpp"
 
 #include <vector>
 
@@ -47,6 +48,21 @@ namespace range_filtering_bench {
         for (uint64_t size = min_size; size <= max_size; size += step_size) {
             auto start = std::chrono::system_clock::now();
             auto surf_real = new range_filtering_rosetta::Rosetta(insert_keys, size);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(surf_real, trie, queries);
+            std::cout << surf_real->getMemoryUsage() << "\t" << fpr << "\t" << size << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsLilRosetta(uint64_t min_size, uint64_t max_size, uint64_t step_size,
+                         std::vector<std::string> &insert_keys,
+                         std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint64_t size = min_size; size <= max_size; size += step_size) {
+            auto start = std::chrono::system_clock::now();
+            auto surf_real = new range_filtering_rosetta::LilRosetta(insert_keys, size);
             auto end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             auto[fpr, query_time] = bench::calculateFPR(surf_real, trie, queries);

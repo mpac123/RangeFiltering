@@ -11,3 +11,4 @@ endfunction()
 
 add_unit_test(test_bf)
 add_unit_test(test_rosetta)
+add_unit_test(test_lil_rosetta)
