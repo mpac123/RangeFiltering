@@ -29,7 +29,8 @@ namespace range_filtering_rosetta {
         uint16_t k_;
         uint8_t bitsPerChar_;
 
-        void insertPrefixesOfLength(uint32_t length, const std::vector<boost::multiprecision::uint256_t>& prefixes, uint32_t single_bf_size);
+        void generatePrefixesOfLength(uint32_t length, const std::vector<boost::multiprecision::uint256_t> &keys,
+                                      std::vector<std::vector<boost::multiprecision::uint256_t>>& prefixes);
         bool lookupRange(boost::multiprecision::uint256_t from, boost::multiprecision::uint256_t to);
         bool lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt);
     };
@@ -71,19 +72,30 @@ namespace range_filtering_rosetta {
             encoded_keys.emplace_back(parseStringToUint256(key, zeroAfterOneMask));
         }
 
+        std::vector<std::vector<boost::multiprecision::uint256_t>> prefixes;
         for (size_t length = 1; length <= maxLevel_; length++) {
-            insertPrefixesOfLength(length, encoded_keys, bf_size);
+            generatePrefixesOfLength(length, encoded_keys, prefixes);
+        }
+
+        uint64_t prefixes_cnt = 0;
+        for (const auto& prefixVect : prefixes) {
+            prefixes_cnt += prefixVect.size();
+        }
+
+        for (auto prefixVect : prefixes) {
+            bloomFilters_.push_back(BF(prefixVect, (double) total_bits * (prefixVect.size() / (prefixes_cnt + 0.)) + 1));
         }
     }
 
-    void LilRosetta::insertPrefixesOfLength(uint32_t length, const std::vector<boost::multiprecision::uint256_t> &prefixes,
-                                            uint32_t single_bf_size) {
-        auto trimmed_prefixes = std::vector<boost::multiprecision::uint256_t>();
-        for (const auto& key : prefixes) {
+    void LilRosetta::generatePrefixesOfLength(uint32_t length, const std::vector<boost::multiprecision::uint256_t> &keys,
+                                           std::vector<std::vector<boost::multiprecision::uint256_t>>& prefixes) {
+        auto trimmed_prefixes = std::set<boost::multiprecision::uint256_t>();
+        for (const auto& key : keys) {
             auto mask = ~((boost::multiprecision::uint256_t(1) << (256 - length)) - 1);
-            trimmed_prefixes.emplace_back(key & mask);
+            trimmed_prefixes.insert(key & mask);
         }
-        bloomFilters_.emplace_back(BF(trimmed_prefixes, single_bf_size, k_));
+        std::vector<boost::multiprecision::uint256_t> vect(trimmed_prefixes.begin(), trimmed_prefixes.end());
+        prefixes.push_back(vect);
     }
 
     uint8_t LilRosetta::calculateCode(char ch, std::bitset<256> zeroAfterOneMask) {
@@ -144,7 +156,7 @@ namespace range_filtering_rosetta {
     bool LilRosetta::lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt) {
         //if (cnt > MAX_DOUBTING_DEPTH) return true;
 
-        auto res = bloomFilters_[level].lookupKey(query, k_);
+        auto res = bloomFilters_[level].lookupKey(query);
         if (!res) return false;
 
         if (level == maxLevel_ - 1) return true;
@@ -156,7 +168,7 @@ namespace range_filtering_rosetta {
     }
 
     uint64_t LilRosetta::getMemoryUsage() const {
-        uint64_t size = sizeof(uint16_t) + 32;
+        uint64_t size = 32;
         for (auto bf : bloomFilters_) {
             size += bf.getMemoryUsage();
         }

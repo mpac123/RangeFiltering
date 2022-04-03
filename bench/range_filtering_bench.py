@@ -30,7 +30,7 @@ def run_Splash_bench(dist, qt, workload_dir, SPL_cutoff, SPL_constraint_min, SPL
 distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 querytypes=["similar", "random", "last_letter"]
 dir="100k"
-results_dir = "range-filtering-results/100k"
+results_dir = "range-filtering-results/100k_2"
 workload_dir = "workload-gen/range_queries_workloads/%s/" % dir
 
 if not os.path.exists(results_dir):
@@ -40,11 +40,11 @@ if not os.path.exists(results_dir):
 SR_suffix_size_min=0
 SR_suffix_size_max=0
 RST_size_min=30000000
-RST_size_max=120000000
+RST_size_max=100000000
 RST_size_step=10000000
 LRST_size_min=5000000
 LRST_size_max=50000000
-LRST_size_step=5000000
+LRST_size_step=10000000
 SPL_cutoff=0.75
 SPL_restraint_min=0.0
 SPL_restraint_max=1.0

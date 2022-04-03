@@ -8,21 +8,23 @@
 namespace range_filtering_rosetta {
     class BF {
     public:
-        BF(std::vector<boost::multiprecision::uint256_t>& keys, uint32_t m, uint16_t k);
-        bool lookupKey(const boost::multiprecision::uint256_t& key, uint16_t k);
+        BF(std::vector<boost::multiprecision::uint256_t>& keys, uint32_t m);
+        bool lookupKey(const boost::multiprecision::uint256_t& key);
         uint64_t getMemoryUsage();
 
-        uint16_t static calculateNumberOfHashes(uint32_t n, uint32_t m);
+        uint8_t static calculateNumberOfHashes(uint32_t n, uint32_t m);
 
     private:
         std::vector<bool> bitArray_;
+        uint8_t k_;
     };
 
-    BF::BF(std::vector<boost::multiprecision::uint256_t> &keys, uint32_t m, uint16_t k) {
+    BF::BF(std::vector<boost::multiprecision::uint256_t> &keys, uint32_t m) {
         bitArray_ = std::vector<bool>(m);
+        k_ = calculateNumberOfHashes(keys.size(), m);
 
         for (const auto& key : keys) {
-            for (size_t i = 0; i < k; i++) {
+            for (size_t i = 0; i < k_; i++) {
                 uint32_t result;
                 MurmurHash3_x86_32(&key, 32, i, (void*) &result);
                 bitArray_[result % bitArray_.size()] = true;
@@ -30,15 +32,15 @@ namespace range_filtering_rosetta {
         }
     }
 
-    uint16_t BF::calculateNumberOfHashes(uint32_t n, uint32_t m) {
+    uint8_t BF::calculateNumberOfHashes(uint32_t n, uint32_t m) {
         auto k = (int16_t) std::floor(std::log(2) * m / (n + 0.0) + 0.5);
         if (k == 0) return 1;
         if (k > 16) return 16;
         return k;
     }
 
-    bool BF::lookupKey(const boost::multiprecision::uint256_t &key, uint16_t k) {
-        for (size_t i = 0 ; i < k ; i++) {
+    bool BF::lookupKey(const boost::multiprecision::uint256_t &key) {
+        for (size_t i = 0 ; i < k_ ; i++) {
             uint32_t result;
             MurmurHash3_x86_32(&key, 32, i, (void*) &result);
             if (!bitArray_[result % bitArray_.size()]) {
@@ -49,7 +51,7 @@ namespace range_filtering_rosetta {
     }
 
     uint64_t BF::getMemoryUsage() {
-        return std::ceil(bitArray_.size() / 8.0);
+        return sizeof(uint8_t) + std::ceil(bitArray_.size() / 8.0);
     }
 }
 

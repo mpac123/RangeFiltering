@@ -13,16 +13,15 @@ namespace range_filtering_rosetta {
             boost::multiprecision::uint256_t(53),
             boost::multiprecision::uint256_t(10563650),
         };
-        auto k = BF::calculateNumberOfHashes(keys.size(), 1000);
-        auto bf = BF(keys, 1000, k);
+        auto bf = BF(keys, 1000);
 
         for (const auto& key : keys) {
-            ASSERT_TRUE(bf.lookupKey(key, k));
+            ASSERT_TRUE(bf.lookupKey(key));
         }
-        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(70), k));
-        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(71), k));
-        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(75), k));
-        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(1005370), k));
+        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(70)));
+        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(71)));
+        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(75)));
+        ASSERT_FALSE(bf.lookupKey(boost::multiprecision::uint256_t(1005370)));
 
         }
     }

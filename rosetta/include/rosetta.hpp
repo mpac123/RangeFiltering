@@ -20,9 +20,9 @@ private:
     std::vector<BF> bloomFilters_;
     bool failed_;
     uint32_t maxLevel_;
-    uint16_t k_;
 
-    void insertPrefixesOfLength(uint32_t length, const std::vector<std::string>& prefixes, uint32_t single_bf_size);
+    void generatePrefixesOfLength(uint32_t length, const std::vector<std::string> &keys,
+                                           std::vector<std::vector<boost::multiprecision::uint256_t>>& prefixes);
     bool lookupRange(boost::multiprecision::uint256_t from, boost::multiprecision::uint256_t to);
     bool lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt);
 };
@@ -40,35 +40,32 @@ Rosetta::Rosetta(const std::vector<std::string>& keys, uint32_t total_size) {
 
 
     bloomFilters_ = std::vector<BF>();
-    uint64_t bf_size = total_size / max_length / 8.0;
-    k_ = BF::calculateNumberOfHashes(keys.size(), bf_size);
 
-    for (size_t length = 1; length <= max_length; length++) {
-        insertPrefixesOfLength(length, keys, bf_size);
+    std::vector<std::vector<boost::multiprecision::uint256_t>> prefixes;
+    for (size_t length = 1; length <= maxLevel_; length++) {
+        generatePrefixesOfLength(length, keys, prefixes);
+    }
+
+    uint64_t prefixes_cnt = 0;
+    for (const auto& prefixVect : prefixes) {
+        prefixes_cnt += prefixVect.size();
+    }
+
+    for (auto prefixVect : prefixes) {
+        bloomFilters_.push_back(BF(prefixVect, (double) total_size * (prefixVect.size() / (prefixes_cnt + 0.)) + 1));
     }
 }
 
-void Rosetta::insertPrefixesOfLength(uint32_t length, const std::vector<std::string> &keys, uint32_t single_bf_size) {
-    for (size_t i = 0; i < 8; i++) {
-        auto trimmed_prefixes = std::vector<boost::multiprecision::uint256_t>();
-        for (const auto& key : keys) {
-            auto prefix = key;
-            if (length < prefix.length()) {
-                prefix = key.substr(0, length);
-            }
-            // Replace last character with 0-prepended i bits
-            if (prefix.length() == length) {
-                auto last_char = prefix[prefix.length() - 1];
-                uint64_t mask = ~((1 << (7 - i)) - 1);
-                last_char &= mask;
-                auto new_prefix = prefix.substr(0, prefix.length() - 1);
-                new_prefix.push_back(last_char);
-                trimmed_prefixes.push_back(parseStringToUint256(new_prefix));
-            } else trimmed_prefixes.push_back(parseStringToUint256(prefix));
-
-        }
-        bloomFilters_.emplace_back(BF(trimmed_prefixes, single_bf_size, k_));
+void Rosetta::generatePrefixesOfLength(uint32_t length, const std::vector<std::string> &keys,
+                                        std::vector<std::vector<boost::multiprecision::uint256_t>>& prefixes) {
+    auto trimmed_prefixes = std::set<boost::multiprecision::uint256_t>();
+    for (const auto& key : keys) {
+        auto parsedKey = parseStringToUint256(key);
+        auto mask = ~((boost::multiprecision::uint256_t(1) << (256 - length)) - 1);
+        trimmed_prefixes.insert(parsedKey & mask);
     }
+    std::vector<boost::multiprecision::uint256_t> vect(trimmed_prefixes.begin(), trimmed_prefixes.end());
+    prefixes.push_back(vect);
 }
 
 boost::multiprecision::uint256_t Rosetta::parseStringToUint256(const std::string &key) {
@@ -117,9 +114,9 @@ bool Rosetta::lookupRange(boost::multiprecision::uint256_t from, boost::multipre
 }
 
 bool Rosetta::lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt) {
-    if (cnt > MAX_DOUBTING_DEPTH) return true;
+    // if (cnt > MAX_DOUBTING_DEPTH) return true;
 
-    auto res = bloomFilters_[level].lookupKey(query, k_);
+    auto res = bloomFilters_[level].lookupKey(query);
     if (!res) return false;
 
     if (level == maxLevel_ - 1) return true;
@@ -131,7 +128,7 @@ bool Rosetta::lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned
 }
 
 uint64_t Rosetta::getMemoryUsage() const {
-    uint64_t size = sizeof(uint16_t);
+    uint64_t size = 0;
     for (auto bf : bloomFilters_) {
         size += bf.getMemoryUsage();
     }
