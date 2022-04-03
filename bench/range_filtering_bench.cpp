@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         surf_params = {std::stoi(argv[5]), std::stoi(argv[6])};
     }
 
-    if (data_structure == "rosetta" && argc > 7) {
+    if ((data_structure == "rosetta" || data_structure == "lilrosetta") && argc > 7) {
         rosetta_size_min = std::stoi(argv[5]);
         rosetta_size_max = std::stoi(argv[6]);
         rosetta_size_step = std::stoi(argv[7]);
@@ -63,7 +63,9 @@ int main(int argc, char *argv[]) {
         range_filtering_bench::runTestsSuRFReal(0, 0, keys, ranges);
     } else if (data_structure == "rosetta") {
         range_filtering_bench::runTestsRosetta(rosetta_size_min, rosetta_size_max, rosetta_size_step, keys, ranges);
-    } else if (data_structure == "fst") {
+    } else if (data_structure == "lilrosetta") {
+        range_filtering_bench::runTestsLilRosetta(rosetta_size_min, rosetta_size_max, rosetta_size_step, keys, ranges);
+    }else if (data_structure == "fst") {
         range_filtering_bench::runTestsFST(keys, ranges);
     } else if (data_structure == "splash") {
         range_filtering_bench::runTestsSplash(splash_cutoff, splash_restraint_val_min,
