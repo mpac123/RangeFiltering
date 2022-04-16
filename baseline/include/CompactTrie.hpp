@@ -15,7 +15,6 @@ public:
     explicit CompactTrie(std::vector<std::string> &keys);
     bool lookupPrefix(const std::string &prefix) override;
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return "BlindTrie"; }
 
 protected:
     class TrieNode {

@@ -65,7 +65,6 @@ public:
     bool lookupRange(const std::string& left_key, const bool left_inclusive,
                      const std::string& right_key, const bool right_inclusive);
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return "Trie"; }
 
 private:
     void insert(TrieNode *node, uint64_t position, const std::vector<std::string> &keys);

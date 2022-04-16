@@ -13,7 +13,6 @@ public:
     explicit SurfingTrie(std::vector<std::string> &keys, uint64_t max_suffix_length);
     bool lookupPrefix(const std::string &prefix) override;
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return "SurfingTrie"; }
 
 protected:
     class TrieNode {

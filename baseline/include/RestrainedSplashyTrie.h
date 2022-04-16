@@ -17,7 +17,6 @@ namespace range_filtering {
                                        uint64_t absolute_restraint_val, double relative_restraint_val);
         bool lookupPrefix(const std::string &prefix) override;
         uint64_t getMemoryUsage() const override;
-        std::string getName() const override { return "RestrainedSplashyTrie"; }
 
     public:
         class TrieNode {

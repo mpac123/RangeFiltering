@@ -21,10 +21,6 @@ public:
 
     uint64_t getMemoryUsage() const override;
 
-    std::string getName() const override {
-        return "PrefixQF q=" + std::to_string(q_) + " r = " + std::to_string(r_);
-    }
-
     double getFalsePositiveProbability();
     bool hasFailed() const { return failed_; }
     uint32_t getQ() const { return q_; }

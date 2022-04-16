@@ -13,7 +13,6 @@ public:
     explicit PrefixBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size, uint64_t max_doubting_level = 0);
     bool lookupPrefix(const std::string& prefix) override;
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return "PrefixBF " + std::to_string(bloomFilter_->getSize()); }
 
     uint64_t getBFSize() { return bloomFilter_->getSize(); }
     double getFPR() { return bloomFilter_->getFPR(); }

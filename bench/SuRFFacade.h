@@ -13,7 +13,6 @@ public:
     bool lookupPrefix(const std::string &prefix) override;
     bool lookupRange(const std::string &left, const std::string &right) override;
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return name_; }
 private:
     surf::SuRF *surf_;
     std::string name_;

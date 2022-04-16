@@ -186,7 +186,7 @@ namespace bench {
             total_query_time += total_time / 10;
         }
 
-        //assert(negatives == true_negatives);
+        // assert(negatives == true_negatives);
         double fp_rate = false_positives / (true_negatives + false_positives + 0.0);
         double average_query_time = total_query_time / queries.size();
         return std::make_tuple(fp_rate, average_query_time);

@@ -19,7 +19,6 @@ public:
                                     double maximalDecreasePercentage = 0.0);
     bool lookupPrefix(const std::string& prefix) override;
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return "MultiPrefixBF"; }
 
     std::vector<uint64_t> getBFsSizes();
     std::vector<uint16_t> getNumberOfHashes();
