@@ -18,6 +18,8 @@ int main(int argc, char *argv[]) {
     uint64_t rangeBF_size_max = 1000000;
     uint64_t rangeBF_size_step = 100000;
 
+    uint64_t fst_height = 5;
+
     double splash_cutoff = 0.75;
     double splash_restraint_val_min = 1.0;
     double splash_restraint_val_max = 1.0;
@@ -53,6 +55,13 @@ int main(int argc, char *argv[]) {
         rangeBF_size_step = std::stoi(argv[7]);
     }
 
+    if (data_structure == "bloomedsplash" && argc > 8) {
+        rangeBF_size_min = std::stoi(argv[5]);
+        rangeBF_size_max = std::stoi(argv[6]);
+        rangeBF_size_step = std::stoi(argv[7]);
+        fst_height = std::stoi(argv[8]);
+    }
+
     std::string input_filename = input_dir + data_type + "_input.txt";
     std::string query_filename = input_dir + data_type + "_queries_" + query_type + ".txt";
 
@@ -85,6 +94,9 @@ int main(int argc, char *argv[]) {
         range_filtering_bench::runTestsRangeBF(rangeBF_size_min, rangeBF_size_max, rangeBF_size_step, keys, ranges);
     } else if (data_structure == "rangeKRBF") {
         range_filtering_bench::runTestsRangeKRBF(rangeBF_size_min, rangeBF_size_max, rangeBF_size_step, keys, ranges);
+    } else if (data_structure == "bloomedsplash") {
+        range_filtering_bench::runTestsBloomedRangeSplash(rangeBF_size_min, rangeBF_size_max, rangeBF_size_step,
+                                                          fst_height, keys, ranges);
     } else {
         std::cout << "Unknown data structure " << data_structure << std::endl;
     }

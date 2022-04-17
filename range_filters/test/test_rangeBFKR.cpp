@@ -70,6 +70,8 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupRange("toys", "toysRS"));
             ASSERT_FALSE(trie.lookupRange("toz", "tozsRS"));
             ASSERT_FALSE(trie.lookupRange("triangle", "triangles"));
+            ASSERT_TRUE(trie.lookupRange("far", "fare"));
+            ASSERT_FALSE(trie.lookupRange("fara", "fare"));
         }
 
         TEST_F (RangeBfKRUnitTest, lookupRangeWordTest) {

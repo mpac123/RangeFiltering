@@ -1,28 +1,18 @@
 #include "gtest/gtest.h"
 
-#include "BloomRangeFilter.hpp"
+#include <bloomed_range_splash.hpp>
 #include <fstream>
 
-namespace range_filtering {
-    namespace bloom_range_filter_test {
+namespace range_filtering_bloomed_range_splash {
+    namespace bloomed_range_splash_test {
         static const std::string kFilePath = "/home/mapac/Coding/RangeFiltering/succinct_trie/test/words.txt";
         static std::vector<std::string> words;
         static const int kWordTestSize = 234369;
-        class BloomRangeFilterUnitTest : public ::testing::Test {
+        class BloomedRangeSplashUnitTest : public ::testing::Test {
 
         };
 
-        TEST_F(BloomRangeFilterUnitTest, emptyKeysSet) {
-            auto keys = std::vector<std::string>();
-            auto filter = BloomRangeFilter(keys, 5000);
-
-            ASSERT_FALSE(filter.lookupPrefix("anything"));
-            ASSERT_TRUE(filter.lookupPrefix(""));
-            ASSERT_FALSE(filter.lookupRange("anything", "anything2"));
-            ASSERT_FALSE(filter.lookupRange("a", "abc"));
-        }
-
-        TEST_F(BloomRangeFilterUnitTest, simpleKeysSet) {
+        TEST_F(BloomedRangeSplashUnitTest, simpleKeysSet) {
             std::vector<std::string> keys = {
                     "f",
                     "far",
@@ -32,16 +22,7 @@ namespace range_filtering {
                     "toy",
                     "trie",
             };
-            auto trie = BloomRangeFilter(keys, 50000);
-
-            ASSERT_TRUE(trie.lookupPrefix("f"));
-            ASSERT_TRUE(trie.lookupPrefix("fa"));
-            ASSERT_FALSE(trie.lookupPrefix("fest"));
-            ASSERT_TRUE(trie.lookupPrefix("fast"));
-            ASSERT_TRUE(trie.lookupPrefix("trie"));
-
-            ASSERT_TRUE(trie.lookupPrefix(("fas")));
-            ASSERT_TRUE(trie.lookupPrefix(("tri")));
+            auto trie = BloomedRangeSplash(keys, 2, 50000);
 
             ASSERT_TRUE(trie.lookupRange("fan", "fat"));
             ASSERT_TRUE(trie.lookupRange("fanas", "fatter"));
@@ -71,8 +52,8 @@ namespace range_filtering {
             ASSERT_FALSE(trie.lookupRange("triangle", "triangles"));
         }
 
-        TEST_F (BloomRangeFilterUnitTest, lookupRangeWordTest) {
-            auto rosetta = new BloomRangeFilter(words, 10000);
+        TEST_F (BloomedRangeSplashUnitTest, lookupRangeWordTest) {
+            auto rosetta = new BloomedRangeSplash(words, 5, 10000);
             bool exist = rosetta->lookupRange(std::string("\1"), words[0]);
             ASSERT_TRUE(exist);
 
@@ -95,12 +76,12 @@ namespace range_filtering {
                 count++;
             }
         }
+
     }
 }
 
-
 int main (int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    range_filtering::bloom_range_filter_test::loadWordList();
+    range_filtering_bloomed_range_splash::bloomed_range_splash_test::loadWordList();
     return RUN_ALL_TESTS();
 }

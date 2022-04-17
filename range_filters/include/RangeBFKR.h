@@ -114,10 +114,11 @@ namespace range_filtering {
             if (bloomFilter_->lookupKey(rightHash)) return true;
 
             // Lookup the left subtrees
-            for (size_t i = common_prefix.length(); i < leftKey.length(); i++) {
+            for (size_t i = common_prefix.length() + 1; i < leftKey.length(); i++) {
                 if (!bloomFilter_->lookupKey(leftHash)) break;
+                auto oldLeftHash = leftHash;
                 leftHash = fingerprintGenerator.calculateNext(leftHash, leftKey.at(i));
-                rightHash = fingerprintGenerator.calculateNext(rightHash, last_letter_in_alphabet);
+                rightHash = fingerprintGenerator.calculateNext(oldLeftHash, last_letter_in_alphabet);
 
                 if (bloomFilter_->lookupKey(fingerprintGenerator.calculateNext(leftHash, endOfWord))) return true;
                 currentHash = fingerprintGenerator.increaseHash(leftHash);
