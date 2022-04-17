@@ -134,8 +134,6 @@ namespace range_filtering_bloomed_range_splash {
         PaddedPrefixBloomFilter bloomFilter_;
         std::bitset<256> charUsageMask_;
 
-        const char endOfWord_ = 127;
-
         bool lookupSuRFOrBF(const std::string& key);
         bool lookupRangeOneLevel(const std::string &leftKey, const std::string &rightKey);
         bool lookupRangeRecursively(const std::string &leftKey, const std::string& rightKey,
@@ -166,7 +164,7 @@ namespace range_filtering_bloomed_range_splash {
         iter_ = BloomedRangeSplash::Iter(this);
         delete builder_;
 
-        bloomFilter_ = PaddedPrefixBloomFilter(keys, bf_size_, fst_height, endOfWord_);
+        bloomFilter_ = PaddedPrefixBloomFilter(keys, bf_size_, fst_height);
     }
 
     void BloomedRangeSplash::generateKeys(const std::vector<std::string>& keys,
@@ -301,29 +299,17 @@ namespace range_filtering_bloomed_range_splash {
             auto newLeftKey = leftKey.substr(0, common_prefix.length() + 1);
             auto newRightKey = rightKey.substr(0, common_prefix.length() + 1);
 
-            auto newLeftKeyWithEndOfWord = newLeftKey + endOfWord_;
-            if (lookupSuRFOrBF(newLeftKeyWithEndOfWord)) return true;
-
-            char nextLetter = newLeftKey.at(newLeftKey.length() - 1) + 1;
-            auto shiftedNewLeftKey = newLeftKey.substr(0, newLeftKey.length() - 1) + nextLetter;
-            if (lookupRangeOneLevel(shiftedNewLeftKey, newRightKey)) return true;
+            if (lookupRangeOneLevel(newLeftKey, newRightKey)) return true;
 
             // Look up the left subtrees
             for (size_t i = common_prefix.length() + 1; i <leftKey.length(); i++) {
                 if (!lookupSuRFOrBF(newLeftKey)) break;
                 newRightKey = newLeftKey + last_letter_in_alphabet;
                 newLeftKey = leftKey.substr(0, i + 1);
-
-                newLeftKeyWithEndOfWord = newLeftKey + endOfWord_;
-                if (lookupSuRFOrBF(newLeftKeyWithEndOfWord)) return true;
-
-                nextLetter = newLeftKey.at(newLeftKey.length() - 1) + 1;
-                shiftedNewLeftKey = newLeftKey.substr(0, newLeftKey.length() - 1) + nextLetter;
-                if (lookupRangeOneLevel(shiftedNewLeftKey, newRightKey)) return true;
+                if (lookupRangeOneLevel(newLeftKey, newRightKey)) return true;
             }
         } else {
-            auto commonPrefixWithEndOfWord = common_prefix + endOfWord_;
-            if (lookupSuRFOrBF(commonPrefixWithEndOfWord)) return true;
+            if (lookupSuRFOrBF(common_prefix)) return true;
         }
 
         // Lookup the right subtrees

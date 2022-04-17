@@ -11,8 +11,7 @@ namespace range_filtering_bloomed_range_splash {
         PaddedPrefixBloomFilter() {};
         explicit PaddedPrefixBloomFilter(const std::vector<std::string>& keys,
                                          uint32_t total_bits,
-                                         uint32_t padding,
-                                         const char endOfWord);
+                                         uint32_t padding);
         bool lookupKey(const std::string& key) const;
         uint64_t getMemoryUsage() const;
     private:
@@ -22,13 +21,11 @@ namespace range_filtering_bloomed_range_splash {
 
     PaddedPrefixBloomFilter::PaddedPrefixBloomFilter(const std::vector<std::string>& keys,
                                                      uint32_t total_bits,
-                                                     uint32_t padding,
-                                                     const char endOfWord) {
+                                                     uint32_t padding) {
         padding_ = padding;
         std::vector<std::string> prefixes;
         for (const auto& key : keys) {
-            auto keyWithEndOfWord = key + endOfWord;
-            for (size_t i = padding_ + 1; i < keyWithEndOfWord.length(); i++) {
+            for (size_t i = padding_ + 1; i < key.length() + 1; i++) {
                 prefixes.push_back(key.substr(0, i));
             }
         }

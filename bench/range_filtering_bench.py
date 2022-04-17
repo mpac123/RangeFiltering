@@ -64,8 +64,8 @@ SPL_cutoff=0.75
 SPL_restraint_min=0.0
 SPL_restraint_max=1.0
 SPL_restraint_interval=0.05
-RBF_size_min=10000
-RBF_size_max=5000000
+RBF_size_min=100000
+RBF_size_max=4000000
 RBF_size_step=500000
 
 for dist in distributions:

@@ -22,34 +22,36 @@ namespace range_filtering_bloomed_range_splash {
                     "toy",
                     "trie",
             };
-            auto trie = BloomedRangeSplash(keys, 2, 50000);
+            for (size_t i = 1; i < 5; i++) {
+                auto trie = BloomedRangeSplash(keys, i, 50000);
 
-            ASSERT_TRUE(trie.lookupRange("fan", "fat"));
-            ASSERT_TRUE(trie.lookupRange("fanas", "fatter"));
-            ASSERT_TRUE(trie.lookupRange("fart", "faster"));
+                ASSERT_TRUE(trie.lookupRange("fan", "fat"));
+                ASSERT_TRUE(trie.lookupRange("fanas", "fatter"));
+                ASSERT_TRUE(trie.lookupRange("fart", "faster"));
 
-            ASSERT_FALSE(trie.lookupRange("abc", "ade"));
-            ASSERT_FALSE(trie.lookupRange("triangle", "trick"));
+                ASSERT_FALSE(trie.lookupRange("abc", "ade"));
+                ASSERT_FALSE(trie.lookupRange("triangle", "trick"));
 
-            ASSERT_FALSE(trie.lookupRange("a", "a"));
-            ASSERT_FALSE(trie.lookupRange("a", "b"));
-            ASSERT_FALSE(trie.lookupRange("fan", "fans"));
-            ASSERT_TRUE(trie.lookupRange("f", "f"));
-            ASSERT_TRUE(trie.lookupRange("f", "fa"));
-            ASSERT_TRUE(trie.lookupRange("f", "fast"));
-            ASSERT_TRUE(trie.lookupRange("t", "top"));
-            ASSERT_TRUE(trie.lookupRange("t", "tor"));
-            ASSERT_TRUE(trie.lookupRange("e", "fa"));
-            ASSERT_TRUE(trie.lookupRange("s", "sa"));
-            ASSERT_TRUE(trie.lookupRange("r", "sa"));
-            ASSERT_TRUE(trie.lookupRange("rabarb", "sa"));
-            ASSERT_TRUE(trie.lookupRange("t", "tr"));
-            ASSERT_TRUE(trie.lookupRange("t", "tram"));
-            ASSERT_TRUE(trie.lookupRange("triangle", "tries"));
-            ASSERT_FALSE(trie.lookupRange("toz", "tozs"));
-            ASSERT_FALSE(trie.lookupRange("toys", "toysRS"));
-            ASSERT_FALSE(trie.lookupRange("toz", "tozsRS"));
-            ASSERT_FALSE(trie.lookupRange("triangle", "triangles"));
+                ASSERT_FALSE(trie.lookupRange("a", "a"));
+                ASSERT_FALSE(trie.lookupRange("a", "b"));
+                ASSERT_FALSE(trie.lookupRange("fan", "fans"));
+                ASSERT_TRUE(trie.lookupRange("f", "f"));
+                ASSERT_TRUE(trie.lookupRange("f", "fa"));
+                ASSERT_TRUE(trie.lookupRange("f", "fast"));
+                ASSERT_TRUE(trie.lookupRange("t", "top"));
+                ASSERT_TRUE(trie.lookupRange("t", "tor"));
+                ASSERT_TRUE(trie.lookupRange("e", "fa"));
+                ASSERT_TRUE(trie.lookupRange("s", "sa"));
+                ASSERT_TRUE(trie.lookupRange("r", "sa"));
+                ASSERT_TRUE(trie.lookupRange("rabarb", "sa"));
+                ASSERT_TRUE(trie.lookupRange("t", "tr"));
+                ASSERT_TRUE(trie.lookupRange("t", "tram"));
+                ASSERT_TRUE(trie.lookupRange("triangle", "tries"));
+                ASSERT_FALSE(trie.lookupRange("toz", "tozs"));
+                ASSERT_FALSE(trie.lookupRange("toys", "toysRS"));
+                ASSERT_FALSE(trie.lookupRange("toz", "tozsRS"));
+                ASSERT_FALSE(trie.lookupRange("triangle", "triangles"));
+            }
         }
 
         TEST_F (BloomedRangeSplashUnitTest, lookupRangeWordTest) {
