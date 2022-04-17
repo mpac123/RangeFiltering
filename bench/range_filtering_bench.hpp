@@ -8,6 +8,9 @@
 #include "../succinct_trie/include/fst.hpp"
 #include "../splash/include/splash.hpp"
 #include "../rosetta/include/lil_rosetta.hpp"
+#include "../range_filters/include/BloomRangeFilter.hpp"
+#include "../range_filters/include/RangeBFKR.h"
+#include "../bloomed_range_splash/include/bloomed_range_splash.hpp"
 
 #include <vector>
 
@@ -98,6 +101,52 @@ namespace range_filtering_bench {
             std::cout << splash->getMemoryUsage() << "\t" << fpr << "\t" << "-" << "\t"
                       << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage()
                       << std::endl;
+        }
+    }
+
+    void runTestsRangeBF(uint64_t min_size, uint64_t max_size, uint64_t step_size,
+                         std::vector<std::string> &insert_keys,
+                         std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint64_t size = min_size; size <= max_size; size += step_size) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filtering::BloomRangeFilter(insert_keys, size);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << size << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsRangeKRBF(uint64_t min_size, uint64_t max_size, uint64_t step_size,
+                         std::vector<std::string> &insert_keys,
+                         std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint64_t size = min_size; size <= max_size; size += step_size) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filtering::RangeBFKR(insert_keys, size);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << size << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsBloomedRangeSplash(uint64_t min_size, uint64_t max_size, uint64_t step_size,
+                           uint64_t fst_height,
+                           std::vector<std::string> &insert_keys,
+                           std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint64_t size = min_size; size <= max_size; size += step_size) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filtering_bloomed_range_splash::BloomedRangeSplash(insert_keys, fst_height, size);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << size << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
         }
     }
 }

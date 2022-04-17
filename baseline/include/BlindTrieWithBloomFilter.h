@@ -16,7 +16,6 @@ public:
     explicit BlindTrieWithBloomFilter(std::vector<std::string> &keys, uint32_t bloom_filter_size);
     bool lookupPrefix(const std::string &prefix) override;
     uint64_t getMemoryUsage() const override;
-    std::string getName() const override { return "BloomTrie " + std::to_string(bloomFilter_->getSize()); }
 
 private:
     class Node {

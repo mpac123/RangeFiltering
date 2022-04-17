@@ -93,7 +93,6 @@ namespace range_filtering_bloomed_splash {
         level_t getHeight() const;
         level_t getSparseStartLevel() const;
 
-        std::string getName() const override { return "BloomedSplash"; }
         void generateKeys(const std::vector<std::string>& keys,
                      std::vector<std::string>& fst_keys,
                      std::vector<std::vector<std::string>>& bf_keys);

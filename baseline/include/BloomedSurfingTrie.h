@@ -16,7 +16,6 @@ namespace range_filtering {
                                     uint32_t BF_size, double max_penalty);
         bool lookupPrefix(const std::string &prefix) override;
         uint64_t getMemoryUsage() const override;
-        std::string getName() const override { return "BloomedSurfingTrie"; }
 
     protected:
         class TrieNode {

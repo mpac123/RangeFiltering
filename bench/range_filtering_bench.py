@@ -27,10 +27,25 @@ def run_Splash_bench(dist, qt, workload_dir, SPL_cutoff, SPL_constraint_min, SPL
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return pd.read_csv(p.stdout, delimiter="\t")
 
+def run_rangeBF_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step):
+    cmd = ["../build/bench/range_filtering_bench", str(dist), str(qt), str(workload_dir), "rangeBF", str(RBF_size_min), str(RBF_size_max), str(RBF_size_step)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return pd.read_csv(p.stdout, delimiter="\t")
+
+def run_rangeKRBF_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step):
+    cmd = ["../build/bench/range_filtering_bench", str(dist), str(qt), str(workload_dir), "rangeKRBF", str(RBF_size_min), str(RBF_size_max), str(RBF_size_step)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return pd.read_csv(p.stdout, delimiter="\t")
+
+def run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, FST_height):
+    cmd = ["../build/bench/range_filtering_bench", str(dist), str(qt), str(workload_dir), "bloomedsplash", str(RBF_size_min), str(RBF_size_max), str(RBF_size_step), str(FST_height)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return pd.read_csv(p.stdout, delimiter="\t")
+
 distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 querytypes=["similar", "random", "last_letter"]
-dir="100k"
-results_dir = "range-filtering-results/100k_2"
+dir="100k_small"
+results_dir = "range-filtering-results/100k_brs_small"
 workload_dir = "workload-gen/range_queries_workloads/%s/" % dir
 
 if not os.path.exists(results_dir):
@@ -49,31 +64,49 @@ SPL_cutoff=0.75
 SPL_restraint_min=0.0
 SPL_restraint_max=1.0
 SPL_restraint_interval=0.05
+RBF_size_min=100000
+RBF_size_max=4000000
+RBF_size_step=500000
 
 for dist in distributions:
     for qt in querytypes:
         print("Running bench for distribution = %s and query type = %s" % (dist, qt))
-        df_rosetta = run_Rosetta_bench(dist, qt, workload_dir, RST_size_min, RST_size_max, RST_size_step)
-        df_lilrosetta = run_LilRosetta_bench(dist, qt, workload_dir, LRST_size_min, LRST_size_max, LRST_size_step)
+        #df_rosetta = run_Rosetta_bench(dist, qt, workload_dir, RST_size_min, RST_size_max, RST_size_step)
+        #df_lilrosetta = run_LilRosetta_bench(dist, qt, workload_dir, LRST_size_min, LRST_size_max, LRST_size_step)
+        df_rangeBF = run_rangeBF_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step)
+        #df_rangeKRBF = run_rangeKRBF_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step)
+        df_bloomedSplash3 = run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, 3)
+        df_bloomedSplash5 = run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, 5)
+        df_bloomedSplash7 = run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, 7)
         df_surf = run_SuRFReal_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_size_max)
         df_splash = run_Splash_bench(dist, qt, workload_dir, SPL_cutoff, SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
         df_fst = run_FST_bench(dist, qt, workload_dir)
 
-        print(df_rosetta)
-        print(df_lilrosetta)
+        #print(df_rosetta)
+        print(df_rangeBF)
+        print(df_bloomedSplash3)
+        print(df_bloomedSplash5)
+        print(df_bloomedSplash7)
         print(df_surf)
         print(df_splash)
         print(df_fst)
 
-        df_rosetta.rename(columns={'FPR': 'Rosetta'}, inplace=True)
-        df_lilrosetta.rename(columns={'FPR': 'LilRosetta'}, inplace=True)
+        #df_rosetta.rename(columns={'FPR': 'Rosetta'}, inplace=True)
+        #df_lilrosetta.rename(columns={'FPR': 'LilRosetta'}, inplace=True)
+        df_rangeBF.rename(columns={'FPR': 'RangeBF'}, inplace=True)
+        df_bloomedSplash3.rename(columns={'FPR': 'BloomedSplash h=3'}, inplace=True)
+        df_bloomedSplash5.rename(columns={'FPR': 'BloomedSplash h=5'}, inplace=True)
+        df_bloomedSplash7.rename(columns={'FPR': 'BloomedSplash h=7'}, inplace=True)
         df_surf.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
         df_splash.rename(columns={'FPR': 'Splash'}, inplace=True)
         df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
 
         print("Creating DF with stats")
-        dfs = [df_rosetta[['Memory usage', 'Rosetta']],
-            df_lilrosetta[['Memory usage', 'LilRosetta']],
+        dfs = [df_rangeBF[['Memory usage', 'RangeBF']],
+            df_bloomedSplash3[['Memory usage', 'BloomedSplash h=3']],
+            df_bloomedSplash5[['Memory usage', 'BloomedSplash h=5']],
+            df_bloomedSplash7[['Memory usage', 'BloomedSplash h=7']],
+            #df_lilrosetta[['Memory usage', 'LilRosetta']],
             df_splash[['Memory usage', 'Splash']],
             df_surf[['Memory usage', 'SuRF Real']],
             df_fst[['Memory usage', 'FST']]]

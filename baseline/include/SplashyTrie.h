@@ -15,7 +15,6 @@ namespace range_filtering {
                              double splashiness_coefficient);
         bool lookupPrefix(const std::string &prefix) override;
         uint64_t getMemoryUsage() const override;
-        std::string getName() const override { return "SurfingTrie"; }
 
     protected:
         class TrieNode {

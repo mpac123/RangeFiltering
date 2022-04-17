@@ -102,8 +102,6 @@ namespace range_filtering_splash {
         level_t getHeight() const;
         level_t getSparseStartLevel() const;
 
-        std::string getName() const override { return "Splash"; }
-
         char* serialize() const {
             uint64_t size = serializedSize();
             char* data = new char[size];
