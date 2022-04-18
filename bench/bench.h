@@ -37,6 +37,19 @@ namespace bench {
         }
     }
 
+    void loadKeysFromFile(const std::string& file_name, std::vector<uint32_t> &keys) {
+        std::string line;
+        std::ifstream infile(file_name);
+        if (infile.is_open()) {
+            while (getline(infile, line)) {
+                keys.push_back(std::stoi(line));
+            }
+            infile.close();
+        } else {
+            std::cout << "Can't open file" << std::endl;
+        }
+    }
+
     void loadRangeQueriesFromFile(const std::string& file_name, std::vector<std::pair<std::string, std::string>> &keys) {
         std::string line;
         std::ifstream infile(file_name);
