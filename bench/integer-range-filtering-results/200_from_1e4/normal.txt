@@ -1,0 +1,8 @@
+,Memory usage,Rosetta,SuRF Real,Empty Ranges
+0,275,0.463025,,
+1,525,0.112304,,
+2,776,0.0199448,,
+3,1023,0.000306843,,
+4,1274,0.0,,
+0,1082,,0.539429,
+0,"integer_range_filtering_bench: /home/mapac/Coding/RangeFiltering/bench/integer_range_filtering_bench.h:31: double range_filtering_bench::calculateFPR(range_filtering::IntegerRangeFilter&, uint64_t, uint64_t, uint64_t, std::vector<unsigned int>&): Assertion `!(found && !foundInFilter)' failed.",,,

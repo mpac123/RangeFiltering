@@ -34,6 +34,7 @@ add_subdirectory(bloomed_splash)
 add_subdirectory(rosetta)
 add_subdirectory(range_filters)
 add_subdirectory(bloomed_range_splash)
+add_subdirectory(integer_range_filters)
 
 add_executable(main main.cpp)
 target_link_libraries(main TRIE)
