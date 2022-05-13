@@ -1,8 +1,9 @@
 import os
 
-distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
-querytypes=["similar", "random", "last_letter"]
-dir="15"
+#distributions=["last_letter_different", "uniform", "normal", "powerlaw", "increasing_degree"]
+distributions=["normal"]
+querytypes=["similar", "random", "common_prefix", "last_letter"]
+dir="15_2"
 
 workload_dir = "workload-gen/workloads/%s/" % dir
 results_dir = "vis"
@@ -48,15 +49,23 @@ def generate_node_color(words, pos, input, queries):
     return res
 
 
-# for dist in distributions:
-#     with open("workloads/15/%s_input.txt" % dist) as f:
-#         words = [word.strip() for word in f.readlines()]
+for dist in distributions:
+    with open("workloads/%s/%s_input.txt" % (dir, dist)) as f:
+        words = [word.strip() for word in f.readlines()]
 
-#         res = generate_node(words, 0)
-#         print(res)
+        for qt in querytypes:
+            w = words.copy()
+            with open("workloads/%s/%s_queries_%s.txt" % (dir, dist, qt)) as f2:
+                queries = [word.strip() for word in f2.readlines()]
 
-with open("workloads/15/normal_input.txt") as f1:
-    input = [word.strip() for word in f1.readlines()]
-    for qt in querytypes:
-        with open("workloads/15/normal_queries_%s.txt" % qt) as f2:
-            queries = [word.strip() for word in f2.readlines()]
+                w.extend(queries)
+                w = sorted(w)
+                res = generate_node(w, 0)
+                print(res)
+                print()
+
+# with open("workloads/15/normal_input.txt") as f1:
+#     input = [word.strip() for word in f1.readlines()]
+#     for qt in querytypes:
+#         with open("workloads/15/normal_queries_%s.txt" % qt) as f2:
+#             queries = [word.strip() for word in f2.readlines()]

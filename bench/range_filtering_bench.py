@@ -44,8 +44,8 @@ def run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_
 
 distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 querytypes=["similar", "random", "last_letter"]
-dir="100k_small"
-results_dir = "range-filtering-results/100k_brs_small"
+dir="100k_big"
+results_dir = "range-filtering-results/100k_brs_big"
 workload_dir = "workload-gen/range_queries_workloads/%s/" % dir
 
 if not os.path.exists(results_dir):
