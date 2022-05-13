@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
             // Calculate q
             auto q = int(std::ceil(std::log2(insert_keys.size())));
             auto alpha = insert_keys.size() / (double(1 << q));
-            if (alpha >= 0.75) q = q + 1;
+            if (alpha >= 0.8) q = q + 1;
 
             struct quotient_filter qf;
             qf_init(&qf, q, r);

@@ -36,7 +36,7 @@ def run_qf_time_vs_size():
 def run_qf_n_vs_m():
     df = qf_n_vs_m(min_r, max_r, min_n, max_n, interval_n)
     df = df[['n', 'q', 'QF size', 'BF size', 'QF FPR', 'BF FPR']]
-    with open(results_dir + "/qf_n_vs_m_2.txt", "w") as f:
+    with open(results_dir + "/qf_n_vs_m_alpha_0_8.txt", "w") as f:
         df.to_csv(f)
 
 for dist in distributions:
