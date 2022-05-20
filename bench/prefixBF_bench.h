@@ -170,7 +170,7 @@ namespace prefixBF_bench {
         auto trie = range_filtering::Trie(insert_keys);
         for (size_t i = start_real_bit; i <= end_real_bit; i++) {
             auto start = std::chrono::system_clock::now();
-            auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, i);
+            auto surf_real = new range_filtering::SuRFFacade(insert_keys, true, false, i, 0);
             auto end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end-start;
             auto [fpr, query_time] = bench::calculateFPR(surf_real, trie, prefixes);

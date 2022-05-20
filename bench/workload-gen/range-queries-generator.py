@@ -10,7 +10,7 @@ import scipy.stats
 @click.option('--length-avg', type=int, help='The average length of the generated words', required=True)
 @click.option('--length-sigma', type=int, help='Standard deviation in lengths of the generated words', required=True)
 @click.option('--letter-distribution', 
-                type=click.Choice(["uniform", "normal", "powerlaw", "last_letter_different"]), 
+                type=click.Choice(["uniform", "normal", "powerlaw", "last_letter_different", "increasing_degree"]), 
                 help='Distribution with which node`s child letters will be generated', 
                 required=True)
 @click.option('--normal_letter_distr_stddev',default=1, help='If letter-distribution=normal, set stddev to this value')
@@ -28,6 +28,7 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     words = []
     queries_random = []
     queries_similar = []
+    queries_common_prefix = []
     queries_last_letter_changed = []
     norm = scipy.stats.norm(length_avg, length_sigma)
     
@@ -37,6 +38,8 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     click.echo("Generating words")
     if letter_distribution=="last_letter_different":
         generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev)
+    elif letter_distribution=="increasing_degree":
+        generate_node_with_increasing_degree(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev, 1, length_avg)
     else:
         generate_node(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev)
 
@@ -51,8 +54,11 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     words = words[:int(len(words) / 2)]
     words.sort()
     
+    click.echo("Generating queries with common prefix")
+    generate_common_prefix_queries(words, n, queries_common_prefix, alphabet)
+
     click.echo("Generating queries with last letter different")
-    generate_similar_queries(words, n, queries_last_letter_changed, alphabet)
+    generate_last_letter_queries(words, n, queries_last_letter_changed, alphabet)
 
     click.echo("Generate random queries")
     query_norm = scipy.stats.norm(int(length_avg / 2), int(length_sigma/2))
@@ -62,6 +68,7 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     queries_random = [(word, shift_word(word, range_min_size, range_max_size, alphabet)) for word in queries_random]
     queries_similar = [(word, shift_word(word, range_min_size, range_max_size, alphabet)) for word in queries_similar]
     queries_last_letter_changed = [(word, shift_word(word, range_min_size, range_max_size, alphabet)) for word in queries_last_letter_changed]
+    queries_common_prefix = [(word, shift_word(word, range_min_size, range_max_size, alphabet)) for word in queries_common_prefix]
 
     dir = "range_queries_workloads"
     if (output_dir is not None):
@@ -76,6 +83,8 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
         f.write("\n".join([";".join(pair) for pair in queries_similar]))
     with open('%s/%s_queries_last_letter.txt' % (dir, output), "w") as f:
         f.write("\n".join([";".join(pair) for pair in queries_last_letter_changed]))
+    with open('%s/%s_queries_common_prefix.txt' % (dir, output), "w") as f:
+        f.write("\n".join([";".join(pair) for pair in queries_common_prefix]))
 
 def generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev):
     base = []
@@ -83,6 +92,32 @@ def generate_words_with_last_letter_different_dist(words, n, alphabet, choice_fu
     for word in base:
         for i in range(4):
             words.append(word + alphabet[i])
+
+def generate_node_with_increasing_degree(words, n, alphabet, prefix, choice_func, norm, normal_letter_distr_stddev, level, avg_length):
+    mean = (len(alphabet) - 1) / 2
+    shuffled_alphabet = alphabet.copy()
+    shuffle(shuffled_alphabet)
+
+    # Check if this is the end of the word
+    prob_end = norm.cdf(len(prefix))
+    rand = random.uniform(0, 1)
+    if rand < prob_end:
+        words.append(prefix)
+        n -= 1
+
+    next_letters = [choice_func(shuffled_alphabet, mean, normal_letter_distr_stddev * (level/avg_length) * (level / avg_length)) for _ in range(n)]
+    # Go with one node on top of the tree
+    rand = random.uniform(0,1)
+    if rand > level / avg_length:
+        next_letters = [choice_func(shuffled_alphabet, mean, normal_letter_distr_stddev * (level/avg_length) * (level / avg_length))] * n
+    
+    for letter in alphabet:
+        cnt = len([1 for lt in next_letters if lt == letter])
+        if cnt == 0:
+            continue
+        new_prefix = prefix + letter
+        generate_node_with_increasing_degree(words, cnt, alphabet, new_prefix, choice_func, norm, normal_letter_distr_stddev, level + 1, avg_length)
+
 
 def generate_node(words, n, alphabet, prefix, choice_func, norm, normal_letter_distr_stddev):
     mean = (len(alphabet) - 1) / 2
@@ -117,6 +152,36 @@ def uniform_choice(lst, param1=None, param2=None):
 
 def powerlaw_choice(lst, mean, stddev):
     return lst[int(random.power(0.1) * len(lst) + 0.5) - 1]
+
+def generate_common_prefix_queries(words, n, similar_queries, alphabet):
+    queries = set()
+    for word in words:
+        # Choose index to cull the prefix at (higher probability for bigger indices)
+        rand1 = random.randint(1, len(word))
+        rand2 = random.randint(1, len(word))
+        ind = max(rand1, rand2)
+        new_word = word[:ind] + random.choice(alphabet)
+        cnt = 0
+        while new_word in queries and cnt < 10:
+            rand1 = random.randint(1, len(word))
+            rand2 = random.randint(1, len(word))
+            ind = max(rand1, rand2)
+            new_word = word[:ind] + random.choice(alphabet)
+            cnt += 1
+        queries.add(word[:ind] + random.choice(alphabet))
+    similar_queries.extend(list(queries))
+
+def generate_last_letter_queries(words, n, similar_queries, alphabet):
+    queries = set()
+    for word in words:
+        ind = len(word) - 1
+        new_word = word[:ind] + random.choice(alphabet)
+        cnt = 0
+        while new_word in queries and cnt < 10:
+            new_word = word[:ind] + random.choice(alphabet)
+            cnt += 1
+        queries.add(word[:ind] + random.choice(alphabet))
+    similar_queries.extend(list(queries))
 
 def generate_similar_queries(words, n, similar_queries, alphabet):
     queries = set()
