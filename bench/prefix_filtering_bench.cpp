@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Memory usage\tFPR\tSuffix size\tCreation time\tQuery time\tTrie memory usage" << std::endl;
     if (data_structure == "surf") {
-        prefixBF_bench::runTestsSuRFReal(0, 0, keys, prefixes);
+        prefixBF_bench::runTestsSuRFReal(std::get<0>(surf_params), std::get<1>(surf_params), keys, prefixes);
     } else if (data_structure == "splash") {
         if (restraintType == range_filtering_splash::SplashRestraintType::relative) {
             prefixBF_bench::runSplashRelative(keys, prefixes,

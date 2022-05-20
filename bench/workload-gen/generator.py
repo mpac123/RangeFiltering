@@ -52,7 +52,7 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     words = words[:int(len(words) / 2)]
     words.sort()
     
-    click.echo("Generating queries with last letter different")
+    click.echo("Generating queries with common prefix")
     generate_common_prefix_queries(words, n, queries_common_prefix, alphabet)
 
     click.echo("Generating queries with last letter different")

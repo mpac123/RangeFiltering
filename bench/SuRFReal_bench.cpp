@@ -5,6 +5,8 @@ int main(int argc, char *argv[]) {
     std::string query_type = "similar";
     std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/workloads/";
 
+    std::string data_structure = "fst";
+
     std::tuple<uint32_t, uint32_t> surf_params = {0, 8};
 
     if (argc > 3) {
@@ -33,5 +35,10 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Memory usage\tFPR\tSuffix size\tCreation time\tQuery time" << std::endl;
+    if (data_structure == "surfreal") {
+        prefixBF_bench::runTestsSuRFReal(std::get<0>(surf_params), std::get<1>(surf_params), keys, prefixes);
+    } else if (data_structure == "surfhash") {
+        prefixBF_bench::runTestsSuRFReal(std::get<0>(surf_params), std::get<1>(surf_params), keys, prefixes);
+    }
     prefixBF_bench::runTestsSuRFReal(std::get<0>(surf_params), std::get<1>(surf_params), keys, prefixes);
 }

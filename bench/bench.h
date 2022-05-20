@@ -183,20 +183,17 @@ namespace bench {
             bool foundInTrie = trie.lookupRange(query.first, true, query.second, true);
             double total_time = 0.0;
             bool foundInFilter;
-            for (size_t i = 0; i < 10; i++) {
-                auto start = std::chrono::system_clock::now();
-                foundInFilter = filter->lookupRange(query.first, query.second);
-                auto end = std::chrono::system_clock::now();
-                std::chrono::duration<double> elapsed_seconds = end-start;
-                total_time += elapsed_seconds.count();
-            }
-
+            auto start = std::chrono::system_clock::now();
+            foundInFilter = filter->lookupRange(query.first, query.second);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
+            total_time += elapsed_seconds.count();
 
 
             negatives += (int) !foundInFilter;
             false_positives += (int) (!foundInTrie && foundInFilter);
             true_negatives += (int) (!foundInFilter && !foundInTrie);
-            total_query_time += total_time / 10;
+            total_query_time += total_time;
         }
 
         // assert(negatives == true_negatives);
