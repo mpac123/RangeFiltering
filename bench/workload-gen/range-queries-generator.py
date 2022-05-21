@@ -32,7 +32,7 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     queries_last_letter_changed = []
     norm = scipy.stats.norm(length_avg, length_sigma)
     
-    alphabet = [chr((ord(alph_start) + i) % 256) for i in range(alph_size)]
+    alphabet = [chr((ord(alph_start) + i) % 256) for i in range(alph_size) if chr((ord(alph_start) + i) % 256) != ';']
     choice_func = uniform_choice if letter_distribution == "uniform" else powerlaw_choice if letter_distribution=="powerlaw" else normal_choice
 
     click.echo("Generating words")
