@@ -47,10 +47,15 @@ def run_chareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return pd.read_csv(p.stdout, delimiter="\t")
 
-distributions=["last_letter_different", "uniform", "normal", "powerlaw", "increasing_degree"]
+def run_rechareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height, CHRQ_bits_per_char):
+    cmd = ["../build/bench/range_filtering_bench", str(dist), str(qt), str(workload_dir), "rechareq", str(CHRQ_top_layer_height), str(CHRQ_frac_min), str(CHRQ_frac_max), str(CHRQ_frac_step), str(CHRQ_bits_per_char)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return pd.read_csv(p.stdout, delimiter="\t")
+
+distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 querytypes=["similar", "random", "last_letter", "common_prefix"]
-dir="100k_26_15_3__2_100"
-results_dir = "range-filtering-results/100k_26_15_3__2_100_chareq"
+dir="100k_90_15_3__2_100"
+results_dir = "range-filtering-results/100k_90_15_3__2_100_rechareq"
 workload_dir = "workload-gen/range_queries_workloads/%s/" % dir
 
 if not os.path.exists(results_dir):
@@ -90,6 +95,9 @@ for dist in distributions:
         df_surf = run_SuRFReal_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_size_max)
         df_splash = run_Splash_bench(dist, qt, workload_dir, SPL_cutoff, SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
         df_chareq = run_chareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height)
+        df_rechareq_3 = run_rechareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height, 3)
+        df_rechareq_4 = run_rechareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height, 4)
+        df_rechareq_5 = run_rechareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height, 5)
         df_fst = run_FST_bench(dist, qt, workload_dir)
 
         #print(df_rosetta)
@@ -111,6 +119,9 @@ for dist in distributions:
         df_surf.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
         df_splash.rename(columns={'FPR': 'Splash'}, inplace=True)
         df_chareq.rename(columns={'FPR': 'CHaREQ'}, inplace=True)
+        df_rechareq_3.rename(columns={'FPR': 'ReCHaREQ b=3'}, inplace=True)
+        df_rechareq_4.rename(columns={'FPR': 'ReCHaREQ b=4'}, inplace=True)
+        df_rechareq_5.rename(columns={'FPR': 'ReCHaREQ b=5'}, inplace=True)
         df_fst.rename(columns={'FPR': 'FST'}, inplace=True)
 
         print("Creating DF with stats")
@@ -122,6 +133,9 @@ for dist in distributions:
             df_splash[['Memory usage', 'Splash']],
             df_surf[['Memory usage', 'SuRF Real']],
             df_chareq[['Memory usage', 'CHaREQ']],
+            df_rechareq_3[['Memory usage', 'ReCHaREQ b=3']],
+            df_rechareq_4[['Memory usage', 'ReCHaREQ b=4']],
+            df_rechareq_5[['Memory usage', 'ReCHaREQ b=5']],
             df_fst[['Memory usage', 'FST']]]
 
         df = pd.concat(dfs)

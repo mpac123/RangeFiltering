@@ -2,11 +2,11 @@
 #include "range_filtering_bench.hpp"
 
 int main(int argc, char *argv[]) {
-    std::string data_type = "powerlaw";
-    std::string query_type = "last_letter";
-    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/range_queries_workloads/100k_26_15_3__2_100/";
+    std::string data_type = "normal";
+    std::string query_type = "random";
+    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/range_queries_workloads/100k_90_15_3__2_100/";
 
-    std::string data_structure = "bloomedsplash";
+    std::string data_structure = "rangeBF";
 
     std::tuple<uint32_t, uint32_t> surf_params = {0, 0};
     uint32_t surfdense_suffix_len = 0;
@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     float chareq_filled_in_fraction_min = 0.5;
     float chareq_filled_in_fraction_max = 1.0;
     float chareq_filled_in_fraction_step = 0.05;
+    uint32_t rechareq_bits_per_char = 4;
 
     range_filtering_splash::SplashRestraintType restraintType = range_filtering_splash::SplashRestraintType::relative;
 
@@ -91,6 +92,14 @@ int main(int argc, char *argv[]) {
         chareq_filled_in_fraction_min = std::stod(argv[6]);
         chareq_filled_in_fraction_max = std::stod(argv[7]);
         chareq_filled_in_fraction_step = std::stod(argv[8]);
+    }
+
+    if (data_structure == "rechareq" && argc > 9) {
+        chareq_top_layer_height = std::stoi(argv[5]);
+        chareq_filled_in_fraction_min = std::stod(argv[6]);
+        chareq_filled_in_fraction_max = std::stod(argv[7]);
+        chareq_filled_in_fraction_step = std::stod(argv[8]);
+        rechareq_bits_per_char = std::stoi(argv[9]);
     }
 
     if (data_structure == "splash" && argc > 11) {
@@ -156,6 +165,9 @@ int main(int argc, char *argv[]) {
     } else if (data_structure == "chareq") {
         range_filtering_bench::runTestsChareq(chareq_filled_in_fraction_min, chareq_filled_in_fraction_max, chareq_filled_in_fraction_step,
                                               chareq_top_layer_height, keys, ranges);
+    } else if (data_structure == "rechareq") {
+        range_filtering_bench::runTestsReChareq(chareq_filled_in_fraction_min, chareq_filled_in_fraction_max, chareq_filled_in_fraction_step,
+                                              chareq_top_layer_height, rechareq_bits_per_char, keys, ranges);
     } else if (data_structure == "splash") {
         try {
             if (restraintType == range_filtering_splash::SplashRestraintType::relative) {

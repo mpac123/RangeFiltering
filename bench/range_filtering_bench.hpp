@@ -12,7 +12,7 @@
 #include "../range_filters/include/RangeBFKR.h"
 #include "../bloomed_range_splash/include/bloomed_range_splash.hpp"
 #include "../range_filters/include/QuotientTrie.hpp"
-
+#include "../range_filters/include/ReCHaREQ.hpp"
 #include <vector>
 
 namespace range_filtering_bench {
@@ -204,6 +204,22 @@ namespace range_filtering_bench {
         for (float fill_in_coeff = fill_in_min; fill_in_coeff <= fill_in_max; fill_in_coeff += fill_in_step) {
             auto start = std::chrono::system_clock::now();
             auto filter = new range_filters::QuotientTrie(insert_keys, top_layer_height, fill_in_coeff);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << fill_in_coeff << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsReChareq(float fill_in_min, float fill_in_max, float fill_in_step,
+                        uint32_t top_layer_height, uint32_t bits_per_char,
+                        std::vector<std::string> &insert_keys,
+                        std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (float fill_in_coeff = fill_in_min; fill_in_coeff <= fill_in_max; fill_in_coeff += fill_in_step) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filters::ReCHaREQ(insert_keys, top_layer_height, fill_in_coeff, bits_per_char);
             auto end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
