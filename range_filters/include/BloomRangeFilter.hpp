@@ -102,6 +102,7 @@ namespace range_filtering {
             std::string newLeftKey = getNextDown(newRightKey, firstCharInAlphabet);
             return lookupRangeRecursively(newLeftKey, rightKey, firstCharInAlphabet, lastLetterInAlphabet);
         }
+        return true;
     }
 
     std::string BloomRangeFilter::getNextUp(std::string word, char lastLetterInAlphabet) {

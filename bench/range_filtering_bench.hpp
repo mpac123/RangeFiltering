@@ -14,6 +14,7 @@
 #include "../range_filters/include/QuotientTrie.hpp"
 #include "../range_filters/include/ReCHaREQ.hpp"
 #include <vector>
+#include "../chareq/include/CHaREQ.hpp"
 
 namespace range_filtering_bench {
 
@@ -203,7 +204,7 @@ namespace range_filtering_bench {
         auto trie = range_filtering::Trie(insert_keys);
         for (float fill_in_coeff = fill_in_min; fill_in_coeff <= fill_in_max; fill_in_coeff += fill_in_step) {
             auto start = std::chrono::system_clock::now();
-            auto filter = new range_filters::QuotientTrie(insert_keys, top_layer_height, fill_in_coeff);
+            auto filter = new range_filtering::CHaREQ(insert_keys, fill_in_coeff);
             auto end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);

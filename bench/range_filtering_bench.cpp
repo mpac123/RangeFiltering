@@ -4,9 +4,9 @@
 int main(int argc, char *argv[]) {
     std::string data_type = "normal";
     std::string query_type = "random";
-    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/range_queries_workloads/100k_90_15_3__2_100/";
+    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/range_queries_workloads/100k_26_15_3__2_100/";
 
-    std::string data_structure = "rangeBF";
+    std::string data_structure = "chareq";
 
     std::tuple<uint32_t, uint32_t> surf_params = {0, 0};
     uint32_t surfdense_suffix_len = 0;
@@ -27,9 +27,9 @@ int main(int argc, char *argv[]) {
     double splash_restraint_val_interval = 0.0;
 
     uint32_t chareq_top_layer_height = 1;
-    float chareq_filled_in_fraction_min = 0.5;
-    float chareq_filled_in_fraction_max = 1.0;
-    float chareq_filled_in_fraction_step = 0.05;
+    float chareq_filled_in_fraction_min = 0.2;
+    float chareq_filled_in_fraction_max = 0.9;
+    float chareq_filled_in_fraction_step = 0.1;
     uint32_t rechareq_bits_per_char = 4;
 
     range_filtering_splash::SplashRestraintType restraintType = range_filtering_splash::SplashRestraintType::relative;

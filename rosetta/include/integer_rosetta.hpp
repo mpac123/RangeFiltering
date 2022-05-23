@@ -55,7 +55,7 @@ namespace range_filtering_rosetta {
         leftKey <<= (32 - maxLevel_);
         rightKey <<= (32 - maxLevel_);
 
-        lookupRangeShifted(leftKey, rightKey);
+        return lookupRangeShifted(leftKey, rightKey);
     }
 
     bool IntegerRosetta::lookupRangeShifted(uint32_t leftKey, uint32_t rightKey) {

@@ -328,6 +328,7 @@ private:
             std::string newLeftKey = prefix + rightKey.at(common_prefix.length()) + char(0);
             return lookupRangeRecursively(newLeftKey, rightKey);
         }
+        return true;
     }
 
     uint64_t ReCHaREQ::hashString(std::string &s) {

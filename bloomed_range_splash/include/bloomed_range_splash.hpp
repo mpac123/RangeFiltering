@@ -364,6 +364,7 @@ namespace range_filtering_bloomed_range_splash {
             std::string newLeftKey = getNextDown(newRightKey, firstCharInAlphabet);
             return lookupRangeRecursively(newLeftKey, rightKey, firstCharInAlphabet, lastLetterInAlphabet);
         }
+        return true;
     }
 
     std::string BloomedRangeSplash::getNextUp(std::string word, char lastLetterInAlphabet) {

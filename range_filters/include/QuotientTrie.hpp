@@ -449,6 +449,7 @@ class QuotientTrie : public range_filtering::RangeFilter {
             std::string newLeftKey = prefix + rightKey.at(common_prefix.length()) + char(0);
             return lookupRangeRecursively(newLeftKey, rightKey);
         }
+        return true;
     }
 
     uint64_t QuotientTrie::hashString(std::string &s) {
