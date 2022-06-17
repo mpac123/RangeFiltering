@@ -49,23 +49,28 @@ def generate_node_color(words, pos, input, queries):
     return res
 
 
-for dist in distributions:
-    with open("workloads/%s/%s_input.txt" % (dir, dist)) as f:
-        words = [word.strip() for word in f.readlines()]
+# for dist in distributions:
+#     with open("workloads/%s/%s_input.txt" % (dir, dist)) as f:
+#         words = [word.strip() for word in f.readlines()]
 
-        for qt in querytypes:
-            w = words.copy()
-            with open("workloads/%s/%s_queries_%s.txt" % (dir, dist, qt)) as f2:
-                queries = [word.strip() for word in f2.readlines()]
+#         for qt in querytypes:
+#             w = words.copy()
+#             with open("workloads/%s/%s_queries_%s.txt" % (dir, dist, qt)) as f2:
+#                 queries = [word.strip() for word in f2.readlines()]
 
-                w.extend(queries)
-                w = sorted(w)
-                res = generate_node(w, 0)
-                print(res)
-                print()
+#                 w.extend(queries)
+#                 w = sorted(w)
+#                 res = generate_node(w, 0)
+#                 print(res)
+#                 print()
 
 # with open("workloads/15/normal_input.txt") as f1:
 #     input = [word.strip() for word in f1.readlines()]
 #     for qt in querytypes:
 #         with open("workloads/15/normal_queries_%s.txt" % qt) as f2:
 #             queries = [word.strip() for word in f2.readlines()]
+
+with open("workloads/example.txt") as f2:
+    words = [word.strip() for word in f2.readlines()]
+    res = generate_node(words, 0)
+    print(res)

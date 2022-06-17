@@ -10,6 +10,7 @@ namespace bloom_filter {
 
 class BloomFilter {
 public:
+    BloomFilter() {};
     BloomFilter(std::vector<std::string> &keys, uint32_t m);
     bool lookupKey(const std::string& key);
     uint64_t getMemoryUsage();

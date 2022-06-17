@@ -45,10 +45,6 @@ namespace range_filtering {
         while (s.length() < key_length_) {
             s = "0" + s;
         }
-//        }
-//        std::stringstream ss;
-//        ss << std::setw(i) << std::setfill('0') << key_length_;
-//        std::string s = ss.str();
         return s;
     }
 

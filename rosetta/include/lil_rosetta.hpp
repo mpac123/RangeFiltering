@@ -8,7 +8,7 @@
 namespace range_filtering_rosetta {
     class LilRosetta : public range_filtering::RangeFilter {
     public:
-         LilRosetta(const std::vector<std::string>& keys, uint32_t total_bits);
+         LilRosetta(const std::vector<std::string>& keys, uint32_t total_bits, float penalty_top_layers);
          bool lookupRange(const std::string& left_key, const std::string& right_key) override;
          uint64_t getMemoryUsage() const override;
 
@@ -35,7 +35,7 @@ namespace range_filtering_rosetta {
         bool lookupDyadicRange(boost::multiprecision::uint256_t query, unsigned level, unsigned cnt);
     };
 
-    LilRosetta::LilRosetta(const std::vector<std::string> &keys, uint32_t total_bits) {
+    LilRosetta::LilRosetta(const std::vector<std::string> &keys, uint32_t total_bits, float penalty_top_layers) {
         uint64_t max_length = 0;
         for (const auto& key : keys) {
             max_length = std::max(max_length, key.length());
@@ -82,9 +82,10 @@ namespace range_filtering_rosetta {
             prefixes_cnt += prefixVect.size();
         }
 
-        for (auto prefixVect : prefixes) {
-            bloomFilters_.push_back(BF(prefixVect, (double) total_bits * (prefixVect.size() / (prefixes_cnt + 0.)) + 1));
+        for (size_t i = 0; i < prefixes.size() - 1; i++) {
+            bloomFilters_.push_back(BF(prefixes[i], (double) total_bits * (prefixes[i].size() * (1. - penalty_top_layers) / (prefixes_cnt + 0.)) + 1));
         }
+        bloomFilters_.push_back(BF(prefixes[prefixes.size() - 1], (double) total_bits * (prefixes[prefixes.size() - 1].size() / (prefixes_cnt + 0.)) + 1));
     }
 
     void LilRosetta::generatePrefixesOfLength(uint32_t length, const std::vector<boost::multiprecision::uint256_t> &keys,
@@ -105,7 +106,7 @@ namespace range_filtering_rosetta {
     }
 
     boost::multiprecision::uint256_t LilRosetta::parseStringToUint256(const std::string &key, std::bitset<256> zeroAfterOneMask) {
-        assert(key.length() < MAX_LENGTH);
+        assert(key.length() <= MAX_LENGTH);
 
         auto parsed = boost::multiprecision::uint256_t(0);
         for (size_t i = 0; i < key.length(); i++) {
@@ -120,9 +121,17 @@ namespace range_filtering_rosetta {
 
         auto zeroAfterOneMask = calculateOneToZeroMask();
 
+        std::string trimmed_from = left_key;
+        std::string trimmed_to = right_key;
+        if (left_key.length() > MAX_LENGTH) {
+            trimmed_from = left_key.substr(0, MAX_LENGTH);
+        }
+        if (right_key.length() > MAX_LENGTH) {
+            trimmed_to = right_key.substr(0, MAX_LENGTH);
+        }
 
-        auto from_int = parseStringToUint256(left_key, zeroAfterOneMask);
-        auto to_int = parseStringToUint256(right_key, zeroAfterOneMask);
+        auto from_int = parseStringToUint256(trimmed_from, zeroAfterOneMask);
+        auto to_int = parseStringToUint256(trimmed_to, zeroAfterOneMask);
 
         return lookupRange(from_int, to_int);
     }

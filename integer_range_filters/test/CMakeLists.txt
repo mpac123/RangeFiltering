@@ -11,3 +11,4 @@ endfunction()
 
 add_unit_test(test_emptyRangesList)
 add_unit_test(test_integerSuRF)
+add_unit_test(test_integerFilter)

@@ -11,3 +11,5 @@ endfunction()
 
 add_unit_test(test_chareq)
 add_unit_test(test_popcount)
+add_unit_test(test_bloomedchareq)
+add_unit_test(test_layeredchareq)

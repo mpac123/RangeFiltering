@@ -2,11 +2,11 @@
 #include "range_filtering_bench.hpp"
 
 int main(int argc, char *argv[]) {
-    std::string data_type = "normal";
-    std::string query_type = "random";
-    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/range_queries_workloads/100k_26_15_3__2_100/";
+    std::string data_type = "last_letter_different";
+    std::string query_type = "last_letter";
+    std::string input_dir = "/home/mapac/Coding/RangeFiltering/bench/workload-gen/range_queries_workloads/10k_26_15_0__2_8/";
 
-    std::string data_structure = "chareq";
+    std::string data_structure = "layeredchareq";
 
     std::tuple<uint32_t, uint32_t> surf_params = {0, 0};
     uint32_t surfdense_suffix_len = 0;
@@ -14,10 +14,11 @@ int main(int argc, char *argv[]) {
     uint64_t rosetta_size_min = 50000000;
     uint64_t rosetta_size_max = 100000000;
     uint64_t rosetta_size_step = 10000000;
+    float rosetta_top_levels_penalty = 0.0;
 
-    uint64_t rangeBF_size_min = 500000;
-    uint64_t rangeBF_size_max = 1000000;
-    uint64_t rangeBF_size_step = 100000;
+    uint64_t rangeBF_size_min = 100000;
+    uint64_t rangeBF_size_max = 8000000;
+    uint64_t rangeBF_size_step = 1000000;
 
     uint64_t fst_height = 5;
 
@@ -31,6 +32,17 @@ int main(int argc, char *argv[]) {
     float chareq_filled_in_fraction_max = 0.9;
     float chareq_filled_in_fraction_step = 0.1;
     uint32_t rechareq_bits_per_char = 4;
+
+    float bchareq_saturation = 0.5;
+
+    uint32_t lchareq_first_layer_height = 14;
+    float lchareq_first_layer_sat = 0.7;
+    float lchareq_second_layer_sat_min = 0.2;
+    float lchareq_second_layer_sat_max = 0.9;
+    float lchareq_second_layer_sat_step = 0.1;
+    uint32_t lchareq_second_layer_culled_bits = 0;
+    uint32_t lchareq_first_layer_culled_bits = 3;
+
 
     range_filtering_splash::SplashRestraintType restraintType = range_filtering_splash::SplashRestraintType::relative;
 
@@ -65,6 +77,9 @@ int main(int argc, char *argv[]) {
         rosetta_size_min = std::stoi(argv[5]);
         rosetta_size_max = std::stoi(argv[6]);
         rosetta_size_step = std::stoi(argv[7]);
+        if (argc > 8) {
+            rosetta_top_levels_penalty = std::stod(argv[8]);
+        }
     }
 
 //    if (data_structure == "splash" && argc > 8) {
@@ -87,11 +102,28 @@ int main(int argc, char *argv[]) {
         fst_height = std::stoi(argv[8]);
     }
 
-    if (data_structure == "chareq" && argc > 8) {
+    if ((data_structure == "chareq" || data_structure == "old_chareq") && argc > 8) {
         chareq_top_layer_height = std::stoi(argv[5]);
         chareq_filled_in_fraction_min = std::stod(argv[6]);
         chareq_filled_in_fraction_max = std::stod(argv[7]);
         chareq_filled_in_fraction_step = std::stod(argv[8]);
+    }
+
+    if (data_structure == "bloomedchareq" && argc > 8) {
+        bchareq_saturation = std::stod(argv[5]);
+        rangeBF_size_min = std::stoi(argv[6]);
+        rangeBF_size_max = std::stoi(argv[7]);
+        rangeBF_size_step = std::stoi(argv[8]);
+    }
+
+    if (data_structure == "layeredchareq" && argc > 11) {
+        lchareq_first_layer_height = std::stoi(argv[5]);
+        lchareq_first_layer_sat = std::stod(argv[6]);
+        lchareq_second_layer_sat_min = std::stod(argv[7]);
+        lchareq_second_layer_sat_max = std::stod(argv[8]);
+        lchareq_second_layer_sat_step = std::stod(argv[9]);
+        lchareq_first_layer_culled_bits = std::stoi(argv[10]);
+        lchareq_second_layer_culled_bits = std::stoi(argv[11]);
     }
 
     if (data_structure == "rechareq" && argc > 9) {
@@ -148,7 +180,8 @@ int main(int argc, char *argv[]) {
     } else if (data_structure == "surfdense") {
         range_filtering_bench::runTestsSuRFRealDense(2, 16, keys, ranges, surfdense_suffix_len);
     } else if (data_structure == "lilrosetta") {
-        range_filtering_bench::runTestsLilRosetta(rosetta_size_min, rosetta_size_max, rosetta_size_step, keys, ranges);
+        range_filtering_bench::runTestsLilRosetta(rosetta_size_min, rosetta_size_max, rosetta_size_step,
+                                                  rosetta_top_levels_penalty, keys, ranges);
     }else if (data_structure == "fst") {
         range_filtering_bench::runTestsFST(keys, ranges);
 //    } else if (data_structure == "splash") {
@@ -165,7 +198,18 @@ int main(int argc, char *argv[]) {
     } else if (data_structure == "chareq") {
         range_filtering_bench::runTestsChareq(chareq_filled_in_fraction_min, chareq_filled_in_fraction_max, chareq_filled_in_fraction_step,
                                               chareq_top_layer_height, keys, ranges);
-    } else if (data_structure == "rechareq") {
+    } else if (data_structure == "bloomedchareq") {
+        range_filtering_bench::runTestsBloomedChareq(bchareq_saturation, rangeBF_size_min, rangeBF_size_max, rangeBF_size_step,
+                                              keys, ranges);
+    } else if (data_structure == "layeredchareq") {
+        range_filtering_bench::runTestsLayeredChareq(lchareq_first_layer_height, lchareq_first_layer_sat,
+                                                     lchareq_second_layer_sat_min, lchareq_second_layer_sat_max, lchareq_second_layer_sat_step,
+                                                     lchareq_first_layer_culled_bits, lchareq_second_layer_culled_bits,
+                                                     keys, ranges);
+    } else if (data_structure == "old_chareq") {
+        range_filtering_bench::runTestsOldChareq(chareq_filled_in_fraction_min, chareq_filled_in_fraction_max, chareq_filled_in_fraction_step,
+                                              chareq_top_layer_height, keys, ranges);
+    }else if (data_structure == "rechareq") {
         range_filtering_bench::runTestsReChareq(chareq_filled_in_fraction_min, chareq_filled_in_fraction_max, chareq_filled_in_fraction_step,
                                               chareq_top_layer_height, rechareq_bits_per_char, keys, ranges);
     } else if (data_structure == "splash") {

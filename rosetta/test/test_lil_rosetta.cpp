@@ -16,7 +16,7 @@ namespace range_filtering_rosetta {
             auto keys = std::vector<std::string> {
                     "12345" };
 
-            auto rosetta = LilRosetta(keys, 50000);
+            auto rosetta = LilRosetta(keys, 50000, 0.0);
 
             std::string key = "3";
             auto expected_value = boost::multiprecision::uint256_t(
@@ -33,7 +33,7 @@ namespace range_filtering_rosetta {
             auto keys = std::vector<std::string> {
             "1234567890@" };
 
-            auto rosetta = LilRosetta(keys, 50000);
+            auto rosetta = LilRosetta(keys, 50000, 0.0);
 
             std::string key = "936=@P";
             auto expected_value = boost::multiprecision::uint256_t(
@@ -62,7 +62,7 @@ namespace range_filtering_rosetta {
                     "ada",
                     "adab"
             };
-            auto rosetta = LilRosetta(keys, 50000);
+            auto rosetta = LilRosetta(keys, 50000, 0.0);
 
             ASSERT_TRUE(rosetta.lookupRange("a", "b"));
             ASSERT_TRUE(rosetta.lookupRange("ab", "abc"));
@@ -79,7 +79,7 @@ namespace range_filtering_rosetta {
                     "toy",
                     "trie",
             };
-            auto rosetta = LilRosetta(keys, 2000);
+            auto rosetta = LilRosetta(keys, 2000, 0.0);
 
             ASSERT_FALSE(rosetta.lookupRange("a", "a"));
             ASSERT_FALSE(rosetta.lookupRange("a", "b"));
@@ -103,7 +103,21 @@ namespace range_filtering_rosetta {
         }
 
         TEST_F (LilRosettaUnitTest, lookupRangeWordTest) {
-            auto rosetta = new LilRosetta(words, 10000);
+            auto rosetta = new LilRosetta(words, 10000, 0.0);
+            bool exist = rosetta->lookupRange(std::string("\1"), words[0]);
+            ASSERT_TRUE(exist);
+
+            for (unsigned i = 0; i < words.size() - 1; i++) {
+                exist = rosetta->lookupRange(words[i], words[i+1]);
+                ASSERT_TRUE(exist);
+            }
+
+            exist = rosetta->lookupRange(words[words.size() - 1], std::string("zzzzzzzz"));
+            ASSERT_TRUE(exist);
+        }
+
+        TEST_F (LilRosettaUnitTest, lookupRangeWordTestWithPenalty) {
+            auto rosetta = new LilRosetta(words, 10000, 0.2);
             bool exist = rosetta->lookupRange(std::string("\1"), words[0]);
             ASSERT_TRUE(exist);
 

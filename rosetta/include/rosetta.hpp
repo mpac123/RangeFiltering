@@ -31,6 +31,10 @@ Rosetta::Rosetta(const std::vector<std::string>& keys, uint32_t total_size) {
     uint64_t max_length = 0;
     for (const auto& key : keys) {
         max_length = std::max(max_length, key.length());
+        if (max_length > MAX_LENGTH) {
+
+            int a =1;
+        }
     }
     if (max_length > MAX_LENGTH) {
         failed_ = true;
@@ -69,7 +73,7 @@ void Rosetta::generatePrefixesOfLength(uint32_t length, const std::vector<std::s
 }
 
 boost::multiprecision::uint256_t Rosetta::parseStringToUint256(const std::string &key) {
-    assert(key.length() < MAX_LENGTH);
+    assert(key.length() <= MAX_LENGTH);
 
     auto parsed = boost::multiprecision::uint256_t(0);
     for (size_t i = 0; i < key.length(); i++) {
@@ -80,9 +84,17 @@ boost::multiprecision::uint256_t Rosetta::parseStringToUint256(const std::string
 
 bool Rosetta::lookupRange(const std::string &from, const std::string &to) {
     assert(!failed_);
+    std::string trimmed_from = from;
+    std::string trimmed_to = to;
+    if (from.length() > MAX_LENGTH) {
+        trimmed_from = from.substr(0, MAX_LENGTH);
+    }
+    if (to.length() > MAX_LENGTH) {
+        trimmed_to = to.substr(0, MAX_LENGTH);
+    }
 
-    auto from_int = parseStringToUint256(from);
-    auto to_int = parseStringToUint256(to);
+    auto from_int = parseStringToUint256(trimmed_from);
+    auto to_int = parseStringToUint256(trimmed_to);
 
     return lookupRange(from_int, to_int);
 }

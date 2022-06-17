@@ -30,18 +30,19 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     queries_similar = []
     queries_common_prefix = []
     queries_last_letter_changed = []
-    norm = scipy.stats.norm(length_avg, length_sigma)
+    if length_sigma != 0:
+        norm = scipy.stats.norm(length_avg, length_sigma)
+    else:
+        norm = None
     
     alphabet = [chr((ord(alph_start) + i) % 256) for i in range(alph_size) if chr((ord(alph_start) + i) % 256) != ';']
     choice_func = uniform_choice if letter_distribution == "uniform" else powerlaw_choice if letter_distribution=="powerlaw" else normal_choice
 
     click.echo("Generating words")
     if letter_distribution=="last_letter_different":
-        generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev)
-    elif letter_distribution=="increasing_degree":
-        generate_node_with_increasing_degree(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev, 1, length_avg)
+        generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev, length_avg)
     else:
-        generate_node(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev)
+        generate_node(words, 2*n, alphabet, "", choice_func, norm, normal_letter_distr_stddev, length_avg)
 
     click.echo("Splitting words into input and queries")
     random.shuffle(words)
@@ -61,8 +62,11 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     generate_last_letter_queries(words, n, queries_last_letter_changed, alphabet)
 
     click.echo("Generate random queries")
-    query_norm = scipy.stats.norm(int(length_avg / 2), int(length_sigma/2))
-    generate_node(queries_random, n, alphabet, "", uniform_choice, query_norm, normal_letter_distr_stddev)
+    if length_sigma != 0:
+        query_norm = scipy.stats.norm(int(length_avg / 2), int(length_sigma/2))
+    else:
+        query_norm = scipy.stats.norm(int(length_avg / 2), 1)
+    generate_node(queries_random, n, alphabet, "", uniform_choice, query_norm, normal_letter_distr_stddev, length_avg)
 
     click.echo("Generate intervals ends")
     queries_random = [(word, shift_word(word, range_min_size, range_max_size, alphabet)) for word in queries_random]
@@ -86,9 +90,9 @@ def generator(n, alph_size, alph_start, length_avg, length_sigma, letter_distrib
     with open('%s/%s_queries_common_prefix.txt' % (dir, output), "w") as f:
         f.write("\n".join([";".join(pair) for pair in queries_common_prefix]))
 
-def generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev):
+def generate_words_with_last_letter_different_dist(words, n, alphabet, choice_func, norm, normal_letter_distr_stddev, length_avg):
     base = []
-    generate_node(base, int(n/2), alphabet, "", choice_func, norm, normal_letter_distr_stddev)
+    generate_node(base, int(n/2), alphabet, "", choice_func, norm, normal_letter_distr_stddev, length_avg)
     for word in base:
         for i in range(4):
             words.append(word + alphabet[i])
@@ -119,17 +123,22 @@ def generate_node_with_increasing_degree(words, n, alphabet, prefix, choice_func
         generate_node_with_increasing_degree(words, cnt, alphabet, new_prefix, choice_func, norm, normal_letter_distr_stddev, level + 1, avg_length)
 
 
-def generate_node(words, n, alphabet, prefix, choice_func, norm, normal_letter_distr_stddev):
+def generate_node(words, n, alphabet, prefix, choice_func, norm, normal_letter_distr_stddev, length_avg):
     mean = (len(alphabet) - 1) / 2
     shuffled_alphabet = alphabet.copy()
     shuffle(shuffled_alphabet)
 
     # Check if this is the end of the word
-    prob_end = norm.cdf(len(prefix))
-    rand = random.uniform(0, 1)
-    if rand < prob_end:
-        words.append(prefix)
-        n -= 1
+    if norm is not None:
+        prob_end = norm.cdf(len(prefix))
+        rand = random.uniform(0, 1)
+        if rand < prob_end:
+            words.append(prefix)
+            n -= 1
+    else:
+        if len(prefix) >= length_avg:
+            words.append(prefix)
+            n -= 1
 
     next_letters = [choice_func(shuffled_alphabet, mean, normal_letter_distr_stddev) for l in range(n)]
 
@@ -138,7 +147,7 @@ def generate_node(words, n, alphabet, prefix, choice_func, norm, normal_letter_d
         if cnt == 0:
             continue
         new_prefix = prefix + letter
-        generate_node(words, cnt, alphabet, new_prefix, choice_func, norm, normal_letter_distr_stddev)
+        generate_node(words, cnt, alphabet, new_prefix, choice_func, norm, normal_letter_distr_stddev, length_avg)
         
 
 def normal_choice(lst, mean, stddev):

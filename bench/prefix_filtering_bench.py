@@ -22,7 +22,7 @@ def run_SuRFReal_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_siz
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return pd.read_csv(p.stdout, delimiter="\t")
 
-distributions=["last_letter_different", "uniform", "normal", "powerlaw", "increasing_degree"]
+distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 #distributions=["uniform"]
 querytypes=["similar", "random", "common_prefix", "last_letter"]
 #querytypes=["similar"]

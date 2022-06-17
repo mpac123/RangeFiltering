@@ -15,21 +15,10 @@
 #include "../range_filters/include/ReCHaREQ.hpp"
 #include <vector>
 #include "../chareq/include/CHaREQ.hpp"
+#include "../chareq/include/BloomedCHaREQ.hpp"
+#include "../chareq/include/LayeredCHaREQ.hpp"
 
 namespace range_filtering_bench {
-
-    struct RangeFilter_Stats {
-        RangeFilter_Stats(range_filtering::RangeFilter* rangeFilter, double FPR_, double creationTime_, double queryTime_) {
-            FPR = FPR_;
-            memoryUsage = rangeFilter->getMemoryUsage();
-            creationTime_ = creationTime;
-            queryTime_ = queryTime;
-        }
-        double FPR;
-        unsigned long long memoryUsage;
-        double creationTime;
-        double queryTime;
-    };
 
     void runTestsSuRFReal(uint32_t start_real_bit, uint32_t end_real_bit,
                           std::vector<std::string> insert_keys,
@@ -107,12 +96,13 @@ namespace range_filtering_bench {
     }
 
     void runTestsLilRosetta(uint64_t min_size, uint64_t max_size, uint64_t step_size,
+                         float top_levels_penalty,
                          std::vector<std::string> &insert_keys,
                          std::vector<std::pair<std::string, std::string>> &queries) {
         auto trie = range_filtering::Trie(insert_keys);
         for (uint64_t size = min_size; size <= max_size; size += step_size) {
             auto start = std::chrono::system_clock::now();
-            auto surf_real = new range_filtering_rosetta::LilRosetta(insert_keys, size);
+            auto surf_real = new range_filtering_rosetta::LilRosetta(insert_keys, size, top_levels_penalty);
             auto end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             auto[fpr, query_time] = bench::calculateFPR(surf_real, trie, queries);
@@ -197,6 +187,22 @@ namespace range_filtering_bench {
         }
     }
 
+    void runTestsOldChareq(float fill_in_min, float fill_in_max, float fill_in_step,
+                        uint32_t top_layer_height,
+                        std::vector<std::string> &insert_keys,
+                        std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (float fill_in_coeff = fill_in_min; fill_in_coeff <= fill_in_max; fill_in_coeff += fill_in_step) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filters::QuotientTrie(insert_keys, 1.0, fill_in_coeff);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << fill_in_coeff << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
     void runTestsChareq(float fill_in_min, float fill_in_max, float fill_in_step,
                                     uint32_t top_layer_height,
                                     std::vector<std::string> &insert_keys,
@@ -209,6 +215,40 @@ namespace range_filtering_bench {
             std::chrono::duration<double> elapsed_seconds = end - start;
             auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
             std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << fill_in_coeff << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsBloomedChareq(float saturation,
+                        uint32_t bf_size_min, uint32_t bf_size_max, uint32_t bf_size_step,
+                        std::vector<std::string> &insert_keys,
+                        std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (uint32_t bf_size = bf_size_min; bf_size <= bf_size_max; bf_size += bf_size_step) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filtering::BloomedCHaREQ(insert_keys, saturation, bf_size);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << bf_size << "\t"
+                      << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
+        }
+    }
+
+    void runTestsLayeredChareq(uint32_t first_layer_height, float first_level_saturation,
+                               float second_level_sat_min, float second_layer_sat_max, float second_layer_sat_step,
+                               uint32_t first_layer_culled_bits, uint32_t second_layer_culled_bits,
+                               std::vector<std::string> &insert_keys,
+                               std::vector<std::pair<std::string, std::string>> &queries) {
+        auto trie = range_filtering::Trie(insert_keys);
+        for (float second_layer_sat = second_level_sat_min; second_layer_sat <= second_layer_sat_max; second_layer_sat += second_layer_sat_step) {
+            auto start = std::chrono::system_clock::now();
+            auto filter = new range_filtering::LayeredCHaREQ(insert_keys, first_layer_height, first_level_saturation,
+                                                             second_layer_sat, first_layer_culled_bits, second_layer_culled_bits);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            auto[fpr, query_time] = bench::calculateFPR(filter, trie, queries);
+            std::cout << filter->getMemoryUsage() << "\t" << fpr << "\t" << second_layer_sat << "\t"
                       << elapsed_seconds.count() << "\t" << query_time << "\t" << trie.getMemoryUsage() << std::endl;
         }
     }
@@ -229,7 +269,7 @@ namespace range_filtering_bench {
         }
     }
 
-    void runSplashRelative(std::vector<std::string> insert_keys,
+    void runSplashRelative(std::vector<std::string> &insert_keys,
                            std::vector<std::pair<std::string, std::string>> &queries,
                            double cutoff_min, double cutoff_max, double cutoff_interval,
                            double restraint_min, double restraint_max, double restraint_interval) {

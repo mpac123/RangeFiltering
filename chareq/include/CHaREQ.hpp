@@ -156,9 +156,6 @@ namespace range_filtering {
 
     void CHaREQ::populateBitmapsAndTempTable(range_filtering::Trie::TrieNode *node, std::vector<uint64_t> &temp_table,
                                              std::string &prefix) {
-        if (prefix == "accola") {
-            int a = 0;
-        }
         if (prefix.length() < 1) {
             for (auto child : node->children) {
                 prefix += child.first;
@@ -296,10 +293,10 @@ namespace range_filtering {
     }
 
     void CHaREQ::insertAndShift(uint64_t idx, uint64_t value, bool isContinuation, bool isShifted, std::vector<uint64_t>& temp_table) {
-        bool isOccupied;
-        bool isPrevOccupied; bool isPrevShifted; bool isPrevContinuation;
+        bool isOccupied = false;
+        bool isPrevOccupied = false; bool isPrevShifted = false; bool isPrevContinuation = false;
         uint64_t prevValue;
-        bool empty;
+        bool empty = false;
 
         do {
             assert(idx < slots_cnt_ + trailing_bits_);
