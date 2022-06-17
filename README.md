@@ -13,11 +13,16 @@
 ## Run Unit Tests
     ./test.sh
 
-## Benchmark
+## The project structure
 
-### Run benchmark
-    ./build/bench/bench
+### Relevant source code
 
-### Workloads
-- Top 10000 English words come from [Google 10000 English Words repository](https://github.com/first20hours/google-10000-english)
-- `words.txt` comes from [SuRF repository](https://github.com/efficient/SuRF/blob/master/test/words.txt)
+The following directories contain the relevant source code:
+- `basic_filters` contains implementation of Bloom filter,
+- `chareq` contains implementation of CHaREQ (Compact Hash Table for Range Emptiness Queries)
+- `rosetta` constains implementation of Rosetta and LilRosetta
+- `splash` constains implementation of Splash
+
+### Benchmarks
+
+The `bench` folder contains C++ code running benchmarks on the data structures with different parameters, Python and bash scripts calling the C++ code, and more Python and bash scripts generating workloads with different query and data distributions.

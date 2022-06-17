@@ -1,6 +1,6 @@
 import glob
 
-files = glob.glob("range_queries_workloads/*/powerlaw_input.txt")
+files = glob.glob("range_queries_workloads/10k_10_15*/powerlaw_input.txt")
 for file in files:
     words = set()
     with open(file, "r") as f:

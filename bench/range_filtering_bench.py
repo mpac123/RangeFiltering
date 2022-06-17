@@ -76,8 +76,8 @@ def run_splash(dist, qt, workload_dir, cut_off_min, cut_off_max, cut_off_interva
 distributions=["last_letter_different", "uniform", "normal", "powerlaw"]
 
 querytypes=["similar", "random", "last_letter", "common_prefix"]
-dir="10k_26_15_0__4_8"
-results_dir = "range-filtering-results/10k_26_15_0__4_8_rev_chareq"
+dir="10k_90_15_0__8_16"
+results_dir = "range-filtering-results/10k_90_15_0__8_16_chareq_equal_fixed"
 workload_dir = "workload-gen/range_queries_workloads/%s/" % dir
 
 if not os.path.exists(results_dir):
@@ -128,18 +128,18 @@ for dist in distributions:
         # df_bloomedSplash3 = run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, 3)
         # df_bloomedSplash5 = run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, 5)
         # df_bloomedSplash7 = run_bloomedRangeSplash_bench(dist, qt, workload_dir, RBF_size_min, RBF_size_max, RBF_size_step, 7)
-        df_surf = run_SuRFReal_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_size_max)
+        # df_surf = run_SuRFReal_bench(dist, qt, workload_dir, SR_suffix_size_min, SR_suffix_size_max)
         #df_splash = run_Splash_bench(dist, qt, workload_dir, SPL_cutoff, SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
         df_splash_rel = run_splash(dist, qt, workload_dir, 0.8, 0.8, 0.05, "relative", SPL_restraint_min, SPL_restraint_max, SPL_restraint_interval)
         df_splash_abs = run_splash(dist, qt, workload_dir, 0.8, 0.8, 0.05, "absolute", SPL_abs_restraint_min, SPL_abs_restraint_max, SPL_abs_restraint_interval)
-        df_chareq = run_chareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height)
+        #df_chareq = run_chareq_bench(dist, qt, workload_dir, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, CHRQ_top_layer_height)
         #df_bloomed_chareq_0_5 = run_bloomedchareq_bench(dist, qt, workload_dir, 0.5, RBF_size_min, RBF_size_max, RBF_size_step)
         #df_bloomed_chareq_0_7 = run_bloomedchareq_bench(dist, qt, workload_dir, 0.7, RBF_size_min, RBF_size_max, RBF_size_step)
-        #df_layered_chareq_14_0_8_1_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.8, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 1, 0)
-        df_layered_chareq_14_0_9_2_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.9, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 2, 0)
+        # df_layered_chareq_14_0_8_1_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.8, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 1, 0)
         df_layered_chareq_14_0_9_3_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.9, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 3, 0)
         df_layered_chareq_14_0_9_4_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.9, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 4, 0)
-        # df_layered_chareq_14_0_9_6_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.9, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 6, 0)
+        df_layered_chareq_14_0_9_5_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.9, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 5, 0)
+        df_layered_chareq_14_0_9_6_0 = run_layeredchareq_bench(dist, qt, workload_dir, 14, 0.9, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 6, 0)
         # df_layered_chareq_4_1 = run_layeredchareq_bench(dist, qt, workload_dir, 4, 0.2, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 1)
         # df_layered_chareq_4_2 = run_layeredchareq_bench(dist, qt, workload_dir, 4, 0.2, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 2)
         # df_layered_chareq_6_0 = run_layeredchareq_bench(dist, qt, workload_dir, 6, 0.2, CHRQ_frac_min, CHRQ_frac_max, CHRQ_frac_step, 0)
@@ -168,7 +168,7 @@ for dist in distributions:
         #print(df_bloomed_chareq_0_5)
         #print(df_bloomed_chareq_0_7)
         #print(df_layered_chareq_14_0_8_1_0)
-        print(df_layered_chareq_14_0_9_3_0)
+        # print(df_layered_chareq_14_0_9_3_0)
         # print(df_layered_chareq_4_2)
         # print(df_layered_chareq_6_0)
         # print(df_layered_chareq_6_1)
@@ -185,15 +185,16 @@ for dist in distributions:
         # df_bloomedSplash3.rename(columns={'FPR': 'BloomedSplash h=3'}, inplace=True)
         # df_bloomedSplash5.rename(columns={'FPR': 'BloomedSplash h=5'}, inplace=True)
         # df_bloomedSplash7.rename(columns={'FPR': 'BloomedSplash h=7'}, inplace=True)
-        df_surf.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
+        #df_surf.rename(columns={'FPR': 'SuRF Real'}, inplace=True)
         df_splash_rel.rename(columns={'FPR': 'Splash Rel. cut-off=0.8'}, inplace=True)
         df_splash_abs.rename(columns={'FPR': 'Splash Abs. cut-off=0.8'}, inplace=True)
         # df_chareq.rename(columns={'FPR': 'CHaREQ'}, inplace=True)
         #df_bloomed_chareq_0_5.rename(columns={'FPR': 'Bloomed CHaREQ sat.=0.5'}, inplace=True)
         #df_bloomed_chareq_0_7.rename(columns={'FPR': 'Bloomed CHaREQ sat.=0.7'}, inplace=True)
-        df_layered_chareq_14_0_9_4_0.rename(columns={'FPR': 'Layered CHaREQ h=14 b=4'}, inplace=True)
-        df_layered_chareq_14_0_9_2_0.rename(columns={'FPR': 'Layered CHaREQ h=14 b=2'}, inplace=True)
         df_layered_chareq_14_0_9_3_0.rename(columns={'FPR': 'Layered CHaREQ h=14 b=3'}, inplace=True)
+        df_layered_chareq_14_0_9_4_0.rename(columns={'FPR': 'Layered CHaREQ h=14 b=4'}, inplace=True)
+        df_layered_chareq_14_0_9_5_0.rename(columns={'FPR': 'Layered CHaREQ h=14 b=5'}, inplace=True)
+        df_layered_chareq_14_0_9_6_0.rename(columns={'FPR': 'Layered CHaREQ h=14 b=6'}, inplace=True)
         # df_layered_chareq_4_2.rename(columns={'FPR': 'Layered CHaREQ h=4 b=2'}, inplace=True)
         # df_layered_chareq_6_0.rename(columns={'FPR': 'Layered CHaREQ h=6 b=0'}, inplace=True)
         # df_layered_chareq_6_1.rename(columns={'FPR': 'Layered CHaREQ h=6 b=1'}, inplace=True)
@@ -211,23 +212,23 @@ for dist in distributions:
                #df_rangeKRBF[['Memory usage', 'Range KR-BF']]
             #df_rosetta[['Memory usage', 'Rosetta']],
             # df_lilrosetta_0_2[['Memory usage', 'LilRosetta p=0.2']],
-            #df_lilrosetta_0_7[['Memory usage', 'LilRosetta p=0.7']],
+            # df_lilrosetta_0_7[['Memory usage', 'LilRosetta p=0.7']],
             df_lilrosetta_0_8[['Memory usage', 'LilRosetta p=0.8']],
-            #df_lilrosetta_0_9[['Memory usage', 'LilRosetta p=0.9']],
+            # df_lilrosetta_0_9[['Memory usage', 'LilRosetta p=0.9']],
             # df_bloomedSplash3[['Memory usage', 'BloomedSplash h=3']],
             # df_bloomedSplash5[['Memory usage', 'BloomedSplash h=5']],
             # df_bloomedSplash7[['Memory usage', 'BloomedSplash h=7']],
             #df_lilrosetta[['Memory usage', 'LilRosetta']],
             df_splash_rel[['Memory usage', 'Splash Rel. cut-off=0.8']],
             df_splash_abs[['Memory usage', 'Splash Abs. cut-off=0.8']],
-            df_surf[['Memory usage', 'SuRF Real']],
+            # df_surf[['Memory usage', 'SuRF Real']],
             #df_chareq[['Memory usage', 'CHaREQ']],
             #df_bloomed_chareq_0_5[['Memory usage', 'Bloomed CHaREQ sat.=0.5']],
             #df_bloomed_chareq_0_7[['Memory usage', 'Bloomed CHaREQ sat.=0.7']],
-            # df_layered_chareq_14_0_9_3_0[['Memory usage', 'Layered CHaREQ h=14 b=3']],
-            df_layered_chareq_14_0_9_2_0[['Memory usage', 'Layered CHaREQ h=14 b=2']],
             df_layered_chareq_14_0_9_3_0[['Memory usage', 'Layered CHaREQ h=14 b=3']],
             df_layered_chareq_14_0_9_4_0[['Memory usage', 'Layered CHaREQ h=14 b=4']],
+            df_layered_chareq_14_0_9_5_0[['Memory usage', 'Layered CHaREQ h=14 b=5']],
+            df_layered_chareq_14_0_9_6_0[['Memory usage', 'Layered CHaREQ h=14 b=6']],
             # df_layered_chareq_4_2[['Memory usage', 'Layered CHaREQ h=4 b=2']],
             # df_layered_chareq_6_0[['Memory usage', 'Layered CHaREQ h=6 b=0']],
             # df_layered_chareq_6_1[['Memory usage', 'Layered CHaREQ h=6 b=1']],
